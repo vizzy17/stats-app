@@ -1,75 +1,558 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Stats Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thursday Night Football | Player Stats Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config for custom colors
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            midnight: '#0A0F1F',
+            electric: '#1A73E8',
+            softwhite: '#F5F7FA',
+            coolgray: '#E2E8F0',
+            gold: '#FFD700',
+            silver: '#C0C0C0',
+            bronze: '#CD7F32',
+          },
+          fontFamily: {
+            heading: ['Montserrat', 'system-ui', 'sans-serif'],
+            body: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['Roboto Mono', 'ui-monospace', 'SFMono-Regular'],
+          },
+        },
+      },
+      darkMode: 'class',
+    };
+  </script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-softwhite text-slate-900 font-body transition-colors duration-300 dark:bg-[#0D1117] dark:text-slate-100">
 
-<header>
-    <div class="header-top">
-        <h1>Player Stats Dashboard</h1>
-        <button id="themeToggle" aria-label="Toggle theme">🌙</button>
-    </div>
-    <input type="text" id="searchInput" placeholder="Search players...">
-</header>
+  <!-- Page wrapper -->
+  <div class="min-h-screen flex flex-col">
 
-<main>
-    <section id="leaderboard">
-        <h2>Current Leaderboard</h2>
-        <table id="leaderboardTable">
-            <thead>
-                <tr>
-                    <th>Player</th>
-                    <th>Goals</th>
-                    <th>Assists</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </section>
+    <!-- Header / Hero -->
+    <header id="top" class="bg-midnight text-white border-b border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-full bg-electric flex items-center justify-center font-heading font-bold text-lg">
+            TNF
+          </div>
+          <div>
+            <h1 class="font-heading text-xl sm:text-2xl font-bold tracking-tight">
+              Thursday Night Football
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-300">
+              Weekly Stats. Real Performance. Zero Politics.
+            </p>
+          </div>
+        </div>
 
-    <section id="weeklyHistory">
-        <h2>Weekly History</h2>
-        <div id="weeksContainer"></div>
-    </section>
+        <!-- Nav + Dark mode -->
+        <div class="flex items-center gap-4">
+          <nav class="hidden md:flex items-center gap-4 text-sm">
+            <a href="#leaderboard" class="hover:text-electric transition-colors">Leaderboard</a>
+            <a href="#weekly-history" class="hover:text-electric transition-colors">Weekly Stats</a>
+            <a href="#players" class="hover:text-electric transition-colors">Players</a>
+            <a href="#admin" class="hover:text-electric transition-colors">Admin</a>
+          </nav>
+          <button id="themeToggle" class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600 text-xs sm:text-sm hover:border-electric hover:text-electric transition-colors">
+            <span id="themeIcon">🌙</span>
+            <span class="hidden sm:inline">Dark mode</span>
+          </button>
+        </div>
+      </div>
 
-    <!-- Player Modal -->
-    <div id="playerModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modalName"></h2>
-            <img id="modalPhoto" src="" alt="Player Photo" onerror="this.style.display='none'">
-            <div class="charts">
-                <canvas id="goalsChart"></canvas>
-                <canvas id="assistsChart"></canvas>
+      <!-- Hero sub-section -->
+      <div class="max-w-6xl mx-auto px-4 pb-6 pt-2">
+        <div class="grid md:grid-cols-2 gap-6 items-center">
+          <div>
+            <h2 class="font-heading text-2xl sm:text-3xl font-bold mb-2">
+              Player Stats Dashboard
+            </h2>
+            <p class="text-sm sm:text-base text-slate-300">
+              Track goals, assists, and total contributions from every Thursday night game. Built for accountability, performance, and banter.
+            </p>
+          </div>
+          <div class="flex md:justify-end gap-4 text-xs sm:text-sm text-slate-300">
+            <div class="border border-slate-700 rounded-lg px-3 py-2">
+              <div class="font-mono text-electric text-sm">WEEK 12</div>
+              <div>Total Goals: <span class="font-semibold">72</span></div>
+              <div>Players Tracked: <span class="font-semibold">29</span></div>
             </div>
-            <p id="bestWeek"></p>
-            <p id="worstWeek"></p>
+            <div class="border border-slate-700 rounded-lg px-3 py-2">
+              <div class="font-mono text-electric text-sm">Top Performers</div>
+              <div>🥇 Gbemmy — <span class="font-semibold">12</span> contrib</div>
+              <div>🥈 Olowo — <span class="font-semibold">12</span> contrib</div>
+              <div>🥉 Niran — <span class="font-semibold">11</span> contrib</div>
+            </div>
+          </div>
         </div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-1">
+      <div class="max-w-6xl mx-auto px-4 py-8 space-y-16">
+
+        <!-- Leaderboard Section -->
+        <section id="leaderboard" class="space-y-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-heading text-xl sm:text-2xl font-semibold mb-1">
+                Current Leaderboard
+              </h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Sorted by total contributions (Goals + Assists). Click a player to view their profile.
+              </p>
+            </div>
+            <div class="hidden sm:flex gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-gold"></span> 1st</span>
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-silver"></span> 2nd</span>
+              <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-bronze"></span> 3rd</span>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div class="relative w-full sm:w-72">
+              <input
+                id="playerSearch"
+                type="text"
+                placeholder="Search players..."
+                class="w-full rounded-lg border border-coolgray/70 bg-white/80 dark:bg-[#161B22] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric focus:border-electric"
+              />
+              <span class="absolute right-3 top-2.5 text-slate-400 text-xs">⌕</span>
+            </div>
+            <div class="flex gap-2 text-xs">
+              <button data-sort="total" class="sort-btn px-3 py-1.5 rounded-full border border-coolgray/70 text-slate-700 dark:text-slate-200 hover:border-electric hover:text-electric transition-colors">
+                Sort by Total
+              </button>
+              <button data-sort="goals" class="sort-btn px-3 py-1.5 rounded-full border border-coolgray/70 text-slate-700 dark:text-slate-200 hover:border-electric hover:text-electric transition-colors">
+                Sort by Goals
+              </button>
+              <button data-sort="assists" class="sort-btn px-3 py-1.5 rounded-full border border-coolgray/70 text-slate-700 dark:text-slate-200 hover:border-electric hover:text-electric transition-colors">
+                Sort by Assists
+              </button>
+            </div>
+          </div>
+
+          <!-- Leaderboard Table -->
+          <div class="overflow-hidden rounded-xl border border-coolgray/70 bg-white/80 dark:bg-[#161B22] shadow-sm">
+            <table class="min-w-full text-sm">
+              <thead class="bg-coolgray/40 dark:bg-slate-800/60">
+                <tr>
+                  <th class="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-300">Rank</th>
+                  <th class="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-300">Player</th>
+                  <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">Goals</th>
+                  <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">Assists</th>
+                  <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">Total</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody" class="divide-y divide-coolgray/60 dark:divide-slate-800">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Weekly History Section -->
+        <section id="weekly-history" class="space-y-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-heading text-xl sm:text-2xl font-semibold mb-1">
+                Weekly History
+              </h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Expand a week to see individual player performance. Currently showing Week 12.
+              </p>
+            </div>
+          </div>
+
+          <!-- Week 12 Accordion -->
+          <div class="rounded-xl border border-coolgray/70 bg-white/80 dark:bg-[#161B22] shadow-sm overflow-hidden">
+            <button
+              id="week12Toggle"
+              class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-coolgray/40 dark:hover:bg-slate-800/60 transition-colors"
+            >
+              <div>
+                <div class="font-medium text-sm sm:text-base">WEEK 12 — Thursday Night Football</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  Total Goals: 72 • Players: 29
+                </div>
+              </div>
+              <span id="week12Icon" class="text-slate-400 text-lg">▼</span>
+            </button>
+            <div id="week12Content" class="border-t border-coolgray/70">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-xs sm:text-sm">
+                  <thead class="bg-coolgray/40 dark:bg-slate-800/60">
+                    <tr>
+                      <th class="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-300">Player</th>
+                      <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">Goals</th>
+                      <th class="px-4 py-2 text-right font-medium text-slate-600 dark:text-slate-300">Assists</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-coolgray/60 dark:divide-slate-800">
+                    <!-- Week 12 data (static from your snippet) -->
+                    <tr><td class="px-4 py-1.5">Zambad</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">MD</td><td class="px-4 py-1.5 text-right">3</td><td class="px-4 py-1.5 text-right">2</td></tr>
+                    <tr><td class="px-4 py-1.5">Jabar</td><td class="px-4 py-1.5 text-right">4</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Tolu</td><td class="px-4 py-1.5 text-right">2</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Hassan</td><td class="px-4 py-1.5 text-right">10</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Gbemmy</td><td class="px-4 py-1.5 text-right">5</td><td class="px-4 py-1.5 text-right">7</td></tr>
+                    <tr><td class="px-4 py-1.5">Cerute</td><td class="px-4 py-1.5 text-right">0</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Hebro</td><td class="px-4 py-1.5 text-right">6</td><td class="px-4 py-1.5 text-right">4</td></tr>
+                    <tr><td class="px-4 py-1.5">Niran</td><td class="px-4 py-1.5 text-right">8</td><td class="px-4 py-1.5 text-right">3</td></tr>
+                    <tr><td class="px-4 py-1.5">Oreke</td><td class="px-4 py-1.5 text-right">9</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Goke</td><td class="px-4 py-1.5 text-right">2</td><td class="px-4 py-1.5 text-right">3</td></tr>
+                    <tr><td class="px-4 py-1.5">Olayinka</td><td class="px-4 py-1.5 text-right">8</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Tofunmi</td><td class="px-4 py-1.5 text-right">5</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Olowo</td><td class="px-4 py-1.5 text-right">10</td><td class="px-4 py-1.5 text-right">2</td></tr>
+                    <tr><td class="px-4 py-1.5">Seun</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Milli</td><td class="px-4 py-1.5 text-right">3</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Hushbaba</td><td class="px-4 py-1.5 text-right">2</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Sly</td><td class="px-4 py-1.5 text-right">3</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Seunpresido</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">3</td></tr>
+                    <tr><td class="px-4 py-1.5">Blinks</td><td class="px-4 py-1.5 text-right">3</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Olawale</td><td class="px-4 py-1.5 text-right">2</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Teejay</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Jide</td><td class="px-4 py-1.5 text-right">2</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Cattano</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">2</td></tr>
+                    <tr><td class="px-4 py-1.5">Kunle Engr</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">3</td></tr>
+                    <tr><td class="px-4 py-1.5">Madiba</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Akeem</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                    <tr><td class="px-4 py-1.5">Tiloye</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">0</td></tr>
+                    <tr><td class="px-4 py-1.5">Muyi</td><td class="px-4 py-1.5 text-right">0</td><td class="px-4 py-1.5 text-right">1</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Players / Modal Section (anchor only, modal triggered from leaderboard) -->
+        <section id="players" class="space-y-4">
+          <div>
+            <h3 class="font-heading text-xl sm:text-2xl font-semibold mb-1">
+              Player Profiles
+            </h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              Click any player in the leaderboard to view their profile, contributions, and trend summary.
+            </p>
+          </div>
+        </section>
+
+        <!-- Admin Panel Section -->
+        <section id="admin" class="space-y-4">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h3 class="font-heading text-xl sm:text-2xl font-semibold mb-1">
+                Admin Panel
+              </h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Restricted area for updating weekly stats and exporting data. Use this for structured Thursday Night Football updates.
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-coolgray/70 bg-white/80 dark:bg-[#161B22] shadow-sm p-4 space-y-4 max-w-lg">
+            <div id="adminLocked" class="space-y-3">
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                Enter password
+              </label>
+              <input
+                id="adminPassword"
+                type="password"
+                class="w-full rounded-lg border border-coolgray/70 bg-white/90 dark:bg-[#0D1117] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-electric focus:border-electric"
+                placeholder="••••••••"
+              />
+              <button
+                id="adminUnlockBtn"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-electric text-white text-sm font-medium hover:bg-blue-500 active:bg-blue-600 transition-colors"
+              >
+                Unlock
+              </button>
+              <p id="adminError" class="text-xs text-red-500 hidden">
+                Incorrect password. Try again.
+              </p>
+            </div>
+
+            <div id="adminUnlocked" class="hidden space-y-3">
+              <p class="text-sm text-emerald-500 font-medium">
+                Admin unlocked. (Demo mode — no real saving, but you can extend this.)
+              </p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                In a real setup, this section would allow you to edit weekly stats, export JSON, and push updates to GitHub.
+              </p>
+              <button
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-coolgray/70 text-xs hover:border-electric hover:text-electric transition-colors"
+              >
+                Export current data (JSON)
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-coolgray/70 dark:border-slate-800 mt-8">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+          © <span id="year"></span> Thursday Night Football. All rights reserved.
+        </div>
+        <div class="flex items-center gap-3">
+          <span>v1.0.0</span>
+          <a href="#top" class="hover:text-electric transition-colors">Back to top</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Player Modal -->
+  <div
+    id="playerModal"
+    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity"
+  >
+    <div class="bg-white dark:bg-[#161B22] rounded-xl shadow-xl max-w-md w-full mx-4 p-5 relative">
+      <button
+        id="modalClose"
+        class="absolute top-3 right-3 text-slate-400 hover:text-electric transition-colors text-lg"
+      >
+        ✕
+      </button>
+      <div class="space-y-3">
+        <div>
+          <h4 id="modalPlayerName" class="font-heading text-lg font-semibold"></h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Thursday Night Football • Player performance summary
+          </p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center text-xs">
+          <div class="rounded-lg bg-coolgray/40 dark:bg-slate-800/60 px-2 py-2">
+            <div class="text-slate-500 dark:text-slate-400">Goals</div>
+            <div id="modalGoals" class="font-mono text-base"></div>
+          </div>
+          <div class="rounded-lg bg-coolgray/40 dark:bg-slate-800/60 px-2 py-2">
+            <div class="text-slate-500 dark:text-slate-400">Assists</div>
+            <div id="modalAssists" class="font-mono text-base"></div>
+          </div>
+          <div class="rounded-lg bg-coolgray/40 dark:bg-slate-800/60 px-2 py-2">
+            <div class="text-slate-500 dark:text-slate-400">Total</div>
+            <div id="modalTotal" class="font-mono text-base"></div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Trend charts and multi-week breakdowns can be added here in future versions.
+        </p>
+      </div>
     </div>
+  </div>
 
-    <!-- Admin Panel -->
-    <section id="adminPanel">
-        <h2>Admin Panel</h2>
-        <div class="admin-row">
-            <input type="password" id="adminPassword" placeholder="Enter password">
-            <button id="unlockAdmin">Unlock</button>
-        </div>
+  <!-- Script: Data + Interactions -->
+  <script>
+    // Year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-        <div id="adminContent" style="display:none;">
-            <h3>Update Weekly Stats (weeks.json)</h3>
-            <p>Paste updated JSON here, then copy it back into <code>data/weeks.json</code> in your repo.</p>
-            <textarea id="adminJSON" placeholder="Paste updated weeks.json here"></textarea>
-            <button id="saveAdmin">Copy JSON to clipboard</button>
-        </div>
-    </section>
-</main>
+    // Dark mode toggle with localStorage
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="app.js"></script>
+    function setTheme(dark) {
+      if (dark) {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.textContent = '☀️';
+      } else {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        themeIcon.textContent = '🌙';
+      }
+    }
+
+    // Init theme
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setTheme(true);
+    } else {
+      setTheme(false);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!html.classList.contains('dark'));
+    });
+
+    // Player data (from your leaderboard snippet)
+    const players = [
+      { name: 'Gbemmy', goals: 5, assists: 7 },
+      { name: 'Olowo', goals: 10, assists: 2 },
+      { name: 'Niran', goals: 8, assists: 3 },
+      { name: 'Hassan', goals: 10, assists: 0 },
+      { name: 'Hebro', goals: 6, assists: 4 },
+      { name: 'Oreke', goals: 9, assists: 0 },
+      { name: 'Olayinka', goals: 8, assists: 1 },
+      { name: 'MD', goals: 3, assists: 2 },
+      { name: 'Goke', goals: 2, assists: 3 },
+      { name: 'Tofunmi', goals: 5, assists: 0 },
+      { name: 'Jabar', goals: 4, assists: 0 },
+      { name: 'Milli', goals: 3, assists: 1 },
+      { name: 'Seunpresido', goals: 1, assists: 3 },
+      { name: 'Blinks', goals: 3, assists: 1 },
+      { name: 'Kunle Engr', goals: 1, assists: 3 },
+      { name: 'Tolu', goals: 2, assists: 1 },
+      { name: 'Hushbaba', goals: 2, assists: 1 },
+      { name: 'Sly', goals: 3, assists: 0 },
+      { name: 'Jide', goals: 2, assists: 1 },
+      { name: 'Cattano', goals: 1, assists: 2 },
+      { name: 'Zambad', goals: 1, assists: 1 },
+      { name: 'Seun', goals: 1, assists: 1 },
+      { name: 'Olawale', goals: 2, assists: 0 },
+      { name: 'Madiba', goals: 1, assists: 1 },
+      { name: 'Akeem', goals: 1, assists: 1 },
+      { name: 'Cerute', goals: 0, assists: 1 },
+      { name: 'Teejay', goals: 1, assists: 0 },
+      { name: 'Tiloye', goals: 1, assists: 0 },
+      { name: 'Muyi', goals: 0, assists: 1 },
+    ].map(p => ({ ...p, total: p.goals + p.assists }));
+
+    let currentSort = 'total';
+
+    const leaderboardBody = document.getElementById('leaderboardBody');
+    const searchInput = document.getElementById('playerSearch');
+    const sortButtons = document.querySelectorAll('.sort-btn');
+
+    function renderLeaderboard() {
+      const query = searchInput.value.trim().toLowerCase();
+      let filtered = players.filter(p => p.name.toLowerCase().includes(query));
+
+      filtered.sort((a, b) => {
+        if (currentSort === 'goals') return b.goals - a.goals || b.total - a.total;
+        if (currentSort === 'assists') return b.assists - a.assists || b.total - a.total;
+        return b.total - a.total || b.goals - a.goals;
+      });
+
+      leaderboardBody.innerHTML = '';
+      filtered.forEach((p, index) => {
+        const rank = index + 1;
+        let rankBadge = rank;
+        let rowClasses = 'hover:bg-coolgray/30 dark:hover:bg-slate-800/60 cursor-pointer transition-colors';
+
+        if (rank === 1) {
+          rankBadge = '🥇';
+          rowClasses += ' bg-gold/10 dark:bg-yellow-500/10';
+        } else if (rank === 2) {
+          rankBadge = '🥈';
+          rowClasses += ' bg-silver/10 dark:bg-slate-400/10';
+        } else if (rank === 3) {
+          rankBadge = '🥉';
+          rowClasses += ' bg-bronze/10 dark:bg-amber-700/10';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = rowClasses;
+        tr.innerHTML = `
+          <td class="px-4 py-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">${rankBadge}</td>
+          <td class="px-4 py-2 text-xs sm:text-sm font-medium">${p.name}</td>
+          <td class="px-4 py-2 text-xs sm:text-sm text-right font-mono">${p.goals}</td>
+          <td class="px-4 py-2 text-xs sm:text-sm text-right font-mono">${p.assists}</td>
+          <td class="px-4 py-2 text-xs sm:text-sm text-right font-mono">${p.total}</td>
+        `;
+        tr.addEventListener('click', () => openPlayerModal(p));
+        leaderboardBody.appendChild(tr);
+      });
+    }
+
+    searchInput.addEventListener('input', renderLeaderboard);
+    sortButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentSort = btn.dataset.sort;
+        sortButtons.forEach(b => b.classList.remove('bg-electric', 'text-white'));
+        btn.classList.add('bg-electric', 'text-white');
+        renderLeaderboard();
+      });
+    });
+
+    // Initialize sort button state
+    sortButtons.forEach(btn => {
+      if (btn.dataset.sort === 'total') {
+        btn.classList.add('bg-electric', 'text-white');
+      }
+    });
+
+    renderLeaderboard();
+
+    // Week 12 accordion
+    const week12Toggle = document.getElementById('week12Toggle');
+    const week12Content = document.getElementById('week12Content');
+    const week12Icon = document.getElementById('week12Icon');
+    let week12Open = true;
+
+    week12Toggle.addEventListener('click', () => {
+      week12Open = !week12Open;
+      week12Content.style.display = week12Open ? 'block' : 'none';
+      week12Icon.textContent = week12Open ? '▼' : '▲';
+    });
+
+    // Admin panel
+    const adminPasswordInput = document.getElementById('adminPassword');
+    const adminUnlockBtn = document.getElementById('adminUnlockBtn');
+    const adminError = document.getElementById('adminError');
+    const adminLocked = document.getElementById('adminLocked');
+    const adminUnlocked = document.getElementById('adminUnlocked');
+
+    const ADMIN_PASSWORD = 'admin123';
+
+    adminUnlockBtn.addEventListener('click', () => {
+      if (adminPasswordInput.value === ADMIN_PASSWORD) {
+        adminError.classList.add('hidden');
+        adminLocked.classList.add('hidden');
+        adminUnlocked.classList.remove('hidden');
+      } else {
+        adminError.classList.remove('hidden');
+      }
+    });
+
+    // Player modal
+    const playerModal = document.getElementById('playerModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalPlayerName = document.getElementById('modalPlayerName');
+    const modalGoals = document.getElementById('modalGoals');
+    const modalAssists = document.getElementById('modalAssists');
+    const modalTotal = document.getElementById('modalTotal');
+
+    function openPlayerModal(player) {
+      modalPlayerName.textContent = player.name;
+      modalGoals.textContent = player.goals;
+      modalAssists.textContent = player.assists;
+      modalTotal.textContent = player.total;
+      playerModal.classList.remove('pointer-events-none');
+      playerModal.classList.add('opacity-100');
+    }
+
+    function closePlayerModal() {
+      playerModal.classList.add('pointer-events-none');
+      playerModal.classList.remove('opacity-100');
+    }
+
+    modalClose.addEventListener('click', closePlayerModal);
+    playerModal.addEventListener('click', (e) => {
+      if (e.target === playerModal) closePlayerModal();
+    });
+
+    // ESC key closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePlayerModal();
+    });
+  </script>
 </body>
 </html>
