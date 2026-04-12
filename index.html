@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Stats Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <h1>Player Stats Dashboard</h1>
+        <button id="themeToggle" aria-label="Toggle theme">🌙</button>
+    </div>
+    <input type="text" id="searchInput" placeholder="Search players...">
+</header>
+
+<main>
+    <section id="leaderboard">
+        <h2>Current Leaderboard</h2>
+        <table id="leaderboardTable">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <section id="weeklyHistory">
+        <h2>Weekly History</h2>
+        <div id="weeksContainer"></div>
+    </section>
+
+    <!-- Player Modal -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalName"></h2>
+            <img id="modalPhoto" src="" alt="Player Photo" onerror="this.style.display='none'">
+            <div class="charts">
+                <canvas id="goalsChart"></canvas>
+                <canvas id="assistsChart"></canvas>
+            </div>
+            <p id="bestWeek"></p>
+            <p id="worstWeek"></p>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <section id="adminPanel">
+        <h2>Admin Panel</h2>
+        <div class="admin-row">
+            <input type="password" id="adminPassword" placeholder="Enter password">
+            <button id="unlockAdmin">Unlock</button>
+        </div>
+
+        <div id="adminContent" style="display:none;">
+            <h3>Update Weekly Stats (weeks.json)</h3>
+            <p>Paste updated JSON here, then copy it back into <code>data/weeks.json</code> in your repo.</p>
+            <textarea id="adminJSON" placeholder="Paste updated weeks.json here"></textarea>
+            <button id="saveAdmin">Copy JSON to clipboard</button>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
