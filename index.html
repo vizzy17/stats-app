@@ -7,7 +7,6 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Tailwind config for custom colors
     tailwind.config = {
       theme: {
         extend: {
@@ -30,18 +29,15 @@
       darkMode: 'class',
     };
   </script>
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body class="bg-softwhite text-slate-900 font-body transition-colors duration-300 dark:bg-[#0D1117] dark:text-slate-100">
 
-  <!-- Page wrapper -->
   <div class="min-h-screen flex flex-col">
 
     <!-- Header / Hero -->
     <header id="top" class="bg-midnight text-white border-b border-slate-800">
       <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <!-- Brand -->
         <div class="flex items-center gap-3">
           <div class="h-10 w-10 rounded-full bg-electric flex items-center justify-center font-heading font-bold text-lg">
             TNF
@@ -56,7 +52,6 @@
           </div>
         </div>
 
-        <!-- Nav + Dark mode -->
         <div class="flex items-center gap-4">
           <nav class="hidden md:flex items-center gap-4 text-sm">
             <a href="#leaderboard" class="hover:text-electric transition-colors">Leaderboard</a>
@@ -71,7 +66,6 @@
         </div>
       </div>
 
-      <!-- Hero sub-section -->
       <div class="max-w-6xl mx-auto px-4 pb-6 pt-2">
         <div class="grid md:grid-cols-2 gap-6 items-center">
           <div>
@@ -99,11 +93,10 @@
       </div>
     </header>
 
-    <!-- Main content -->
     <main class="flex-1">
       <div class="max-w-6xl mx-auto px-4 py-8 space-y-16">
 
-        <!-- Leaderboard Section -->
+        <!-- Leaderboard -->
         <section id="leaderboard" class="space-y-6">
           <div class="flex items-center justify-between gap-4">
             <div>
@@ -121,7 +114,6 @@
             </div>
           </div>
 
-          <!-- Search -->
           <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <div class="relative w-full sm:w-72">
               <input
@@ -145,7 +137,6 @@
             </div>
           </div>
 
-          <!-- Leaderboard Table -->
           <div class="overflow-hidden rounded-xl border border-coolgray/70 bg-white/80 dark:bg-[#161B22] shadow-sm">
             <table class="min-w-full text-sm">
               <thead class="bg-coolgray/40 dark:bg-slate-800/60">
@@ -158,13 +149,12 @@
                 </tr>
               </thead>
               <tbody id="leaderboardBody" class="divide-y divide-coolgray/60 dark:divide-slate-800">
-                <!-- Rows injected by JS -->
               </tbody>
             </table>
           </div>
         </section>
 
-        <!-- Weekly History Section -->
+        <!-- Weekly History -->
         <section id="weekly-history" class="space-y-6">
           <div class="flex items-center justify-between gap-4">
             <div>
@@ -177,7 +167,6 @@
             </div>
           </div>
 
-          <!-- Week 12 Accordion -->
           <div class="rounded-xl border border-coolgray/70 bg-white/80 dark:bg-[#161B22] shadow-sm overflow-hidden">
             <button
               id="week12Toggle"
@@ -202,7 +191,6 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-coolgray/60 dark:divide-slate-800">
-                    <!-- Week 12 data (static from your snippet) -->
                     <tr><td class="px-4 py-1.5">Zambad</td><td class="px-4 py-1.5 text-right">1</td><td class="px-4 py-1.5 text-right">1</td></tr>
                     <tr><td class="px-4 py-1.5">MD</td><td class="px-4 py-1.5 text-right">3</td><td class="px-4 py-1.5 text-right">2</td></tr>
                     <tr><td class="px-4 py-1.5">Jabar</td><td class="px-4 py-1.5 text-right">4</td><td class="px-4 py-1.5 text-right">0</td></tr>
@@ -239,7 +227,7 @@
           </div>
         </section>
 
-        <!-- Players / Modal Section (anchor only, modal triggered from leaderboard) -->
+        <!-- Players anchor -->
         <section id="players" class="space-y-4">
           <div>
             <h3 class="font-heading text-xl sm:text-2xl font-semibold mb-1">
@@ -251,7 +239,7 @@
           </div>
         </section>
 
-        <!-- Admin Panel Section -->
+        <!-- Admin -->
         <section id="admin" class="space-y-4">
           <div class="flex items-center justify-between gap-4">
             <div>
@@ -304,7 +292,6 @@
       </div>
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-coolgray/70 dark:border-slate-800 mt-8">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
         <div>
@@ -331,11 +318,18 @@
         ✕
       </button>
       <div class="space-y-3">
-        <div>
-          <h4 id="modalPlayerName" class="font-heading text-lg font-semibold"></h4>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
-            Thursday Night Football • Player performance summary
-          </p>
+        <div class="flex flex-col items-center gap-3">
+          <img
+            id="modalPhoto"
+            class="w-24 h-24 rounded-full object-cover border border-coolgray/70 dark:border-slate-700 hidden"
+            alt="Player photo"
+          />
+          <div class="text-center">
+            <h4 id="modalPlayerName" class="font-heading text-lg font-semibold"></h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Thursday Night Football • Player performance summary
+            </p>
+          </div>
         </div>
         <div class="grid grid-cols-3 gap-3 text-center text-xs">
           <div class="rounded-lg bg-coolgray/40 dark:bg-slate-800/60 px-2 py-2">
@@ -358,12 +352,11 @@
     </div>
   </div>
 
-  <!-- Script: Data + Interactions -->
   <script>
-    // Year in footer
+    // Year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Dark mode toggle with localStorage
+    // Dark mode
     const html = document.documentElement;
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
@@ -380,7 +373,6 @@
       }
     }
 
-    // Init theme
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       setTheme(true);
@@ -392,7 +384,7 @@
       setTheme(!html.classList.contains('dark'));
     });
 
-    // Player data (from your leaderboard snippet)
+    // Data
     const players = [
       { name: 'Gbemmy', goals: 5, assists: 7 },
       { name: 'Olowo', goals: 10, assists: 2 },
@@ -426,7 +418,6 @@
     ].map(p => ({ ...p, total: p.goals + p.assists }));
 
     let currentSort = 'total';
-
     const leaderboardBody = document.getElementById('leaderboardBody');
     const searchInput = document.getElementById('playerSearch');
     const sortButtons = document.querySelectorAll('.sort-btn');
@@ -482,7 +473,6 @@
       });
     });
 
-    // Initialize sort button state
     sortButtons.forEach(btn => {
       if (btn.dataset.sort === 'total') {
         btn.classList.add('bg-electric', 'text-white');
@@ -503,13 +493,12 @@
       week12Icon.textContent = week12Open ? '▼' : '▲';
     });
 
-    // Admin panel
+    // Admin
     const adminPasswordInput = document.getElementById('adminPassword');
     const adminUnlockBtn = document.getElementById('adminUnlockBtn');
     const adminError = document.getElementById('adminError');
     const adminLocked = document.getElementById('adminLocked');
     const adminUnlocked = document.getElementById('adminUnlocked');
-
     const ADMIN_PASSWORD = 'admin123';
 
     adminUnlockBtn.addEventListener('click', () => {
@@ -522,19 +511,30 @@
       }
     });
 
-    // Player modal
+    // Modal + photos
     const playerModal = document.getElementById('playerModal');
     const modalClose = document.getElementById('modalClose');
     const modalPlayerName = document.getElementById('modalPlayerName');
     const modalGoals = document.getElementById('modalGoals');
     const modalAssists = document.getElementById('modalAssists');
     const modalTotal = document.getElementById('modalTotal');
+    const modalPhoto = document.getElementById('modalPhoto');
 
     function openPlayerModal(player) {
       modalPlayerName.textContent = player.name;
       modalGoals.textContent = player.goals;
       modalAssists.textContent = player.assists;
       modalTotal.textContent = player.total;
+
+      // Try to load photo
+      const imgPath = `photos/${player.name}.jpg`;
+      modalPhoto.src = imgPath;
+      modalPhoto.classList.remove('hidden');
+
+      modalPhoto.onerror = () => {
+        modalPhoto.classList.add('hidden');
+      };
+
       playerModal.classList.remove('pointer-events-none');
       playerModal.classList.add('opacity-100');
     }
@@ -549,7 +549,6 @@
       if (e.target === playerModal) closePlayerModal();
     });
 
-    // ESC key closes modal
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closePlayerModal();
     });
