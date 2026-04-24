@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Thursday Night Football | Premier League EA FC Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,6 +37,10 @@
       }
     };
   </script>
+  <style>
+    /* small visual tweak for dark mode text swap */
+    .theme-label { display:inline-block; min-width:56px; text-align:left; }
+  </style>
 </head>
 <body class="bg-ea-gradient text-plOff font-sans transition-colors duration-300">
   <div id="app" class="min-h-screen flex">
@@ -94,19 +98,24 @@
         <div class="flex items-center gap-3">
           <button class="md:hidden text-plOff text-xl" id="mobileMenuToggle">☰</button>
           <div>
-            <div class="text-sm font-semibold">Dashboard</div>
-            <div class="text-[11px] text-plGrey">Premier League × EA FC Hybrid</div>
+            <div id="headerTitle" class="text-sm font-semibold">Dashboard</div>
+            <div id="headerSubtitle" class="text-[11px] text-plGrey">Premier League × EA FC Hybrid</div>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
           <div class="hidden sm:flex gap-3 text-[11px] text-plGrey">
-            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">WEEK 12 • <span class="text-plOff font-medium">72</span> goals</div>
-            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">Players • <span class="text-plOff font-medium">29</span></div>
+            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">
+              <span id="headerWeekLabel" class="font-medium">WEEK 12</span> • <span id="headerWeekGoals" class="text-plOff font-medium">72</span> goals
+            </div>
+            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">
+              Players • <span id="headerPlayersCount" class="text-plOff font-medium">29</span>
+            </div>
           </div>
 
           <button id="themeToggle" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-plGrey/40 text-[11px] text-plGrey hover:border-plGreen hover:text-plGreen transition">
-            <span id="themeIcon">🌙</span><span class="hidden sm:inline">Dark mode</span>
+            <span id="themeIcon">🌙</span>
+            <span class="theme-label" id="themeLabel">Dark mode</span>
           </button>
         </div>
       </header>
@@ -130,6 +139,10 @@
             <button data-target="#players" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">👤</span><span>Players</span></button>
             <button data-target="#admin" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">🔐</span><span>Admin</span></button>
           </nav>
+
+          <div class="mt-4">
+            <button id="mobileThemeToggle" class="w-full px-3 py-2 rounded-xl border border-plGrey/40 text-plGrey hover:border-plGreen hover:text-plGreen transition">Toggle theme</button>
+          </div>
         </div>
       </div>
 
@@ -258,6 +271,45 @@
         let weeks = {};
         let currentSort = "total";
 
+        // Theme helpers: persist in localStorage and apply to documentElement
+        function applyTheme(theme) {
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('themeIcon').textContent = '☀️';
+            document.getElementById('themeLabel').textContent = 'Light';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.getElementById('themeIcon').textContent = '🌙';
+            document.getElementById('themeLabel').textContent = 'Dark mode';
+          }
+          localStorage.setItem('tnf_theme', theme);
+        }
+
+        // Initialize theme from localStorage or system preference
+        (function initTheme() {
+          const saved = localStorage.getItem('tnf_theme');
+          if (saved) {
+            applyTheme(saved);
+          } else {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(prefersDark ? 'dark' : 'light');
+          }
+        })();
+
+        // Toggle theme handlers
+        document.getElementById('themeToggle').addEventListener('click', () => {
+          const isDark = document.documentElement.classList.contains('dark');
+          applyTheme(isDark ? 'light' : 'dark');
+        });
+        document.getElementById('sidebarThemeToggle').addEventListener('click', () => {
+          const isDark = document.documentElement.classList.contains('dark');
+          applyTheme(isDark ? 'light' : 'dark');
+        });
+        document.getElementById('mobileThemeToggle')?.addEventListener('click', () => {
+          const isDark = document.documentElement.classList.contains('dark');
+          applyTheme(isDark ? 'light' : 'dark');
+        });
+
         function getNextThursday() {
           const today = new Date();
           const day = today.getDay();
@@ -279,7 +331,6 @@
 
         // Aggregates totals from weeks.json into the players array
         function computeTotals() {
-          // Build a lookup for players by normalized name
           const lookup = {};
           // Seed lookup with players.json entries (preserve original names)
           players.forEach(p => {
@@ -299,7 +350,6 @@
               if (!name) return;
               const key = name.toLowerCase();
 
-              // Ensure player exists in lookup; if not, create a new entry
               if (!lookup[key]) {
                 lookup[key] = { name: name, goals: 0, assists: 0 };
               }
@@ -335,6 +385,9 @@
             // Aggregate totals from weeks into players
             computeTotals();
 
+            // Update header dynamic values
+            updateHeaderSummary();
+
             renderLeaderboard();
             renderHero();
             renderWeeklyHistory();
@@ -345,12 +398,31 @@
           }
         }
 
+        // Update header week label and players count dynamically
+        function updateHeaderSummary() {
+          const weekKeys = Object.keys(weeks).sort((a,b) => {
+            // keep natural order WEEK1, WEEK2...
+            const na = Number(a.replace(/\D/g,'')) || 0;
+            const nb = Number(b.replace(/\D/g,'')) || 0;
+            return na - nb;
+          });
+          const latestWeek = weekKeys.length ? weekKeys[weekKeys.length - 1] : 'WEEK 1';
+          const latestObj = weeks[latestWeek] || {};
+          const totalGoalsLatest = (latestObj.players || []).reduce((s,p) => s + (Number(p.goals||0) + Number(p.assists||0)), 0);
+          document.getElementById('headerWeekLabel').textContent = latestWeek;
+          document.getElementById('headerWeekGoals').textContent = totalGoalsLatest;
+          document.getElementById('headerPlayersCount').textContent = players.length;
+          // update subtitle to show latest week and date
+          const dateLabel = latestObj.date ? ` • ${latestObj.date}` : '';
+          document.getElementById('headerSubtitle').textContent = `Premier League × EA FC Hybrid${dateLabel}`;
+        }
+
         function renderHero() {
           let totalGoals = 0;
           let totalAssists = 0;
           Object.values(weeks).forEach(w => {
             const list = w.players || [];
-            list.forEach(p => { totalGoals += (p.goals || 0); totalAssists += (p.assists || 0); });
+            list.forEach(p => { totalGoals += (Number(p.goals) || 0); totalAssists += (Number(p.assists) || 0); });
           });
           document.getElementById("heroGoals").textContent = totalGoals;
           document.getElementById("heroAssists").textContent = totalAssists;
@@ -360,8 +432,7 @@
         function renderLeaderboard() {
           const tbody = document.getElementById("leaderboardBody");
           tbody.innerHTML = "";
-          // Ensure players totals are up to date
-          players.forEach(p => { p.total = (p.goals || 0) + (p.assists || 0); });
+          players.forEach(p => { p.total = (Number(p.goals) || 0) + (Number(p.assists) || 0); });
           let sorted = [...players].sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
           sorted.forEach((p, index) => {
             const row = document.createElement("tr");
@@ -386,10 +457,10 @@
             const weekObj = weeks[weekName] || {};
             const list = weekObj.players || [];
             const dateLabel = weekObj.date || "";
-            const totalContrib = list.reduce((s, p) => s + ((p.goals || 0) + (p.assists || 0)), 0);
-            const goalsList = list.filter(p => (p.goals || 0) > 0).sort((a, b) => (b.goals || 0) - (a.goals || 0));
-            const assistsList = list.filter(p => (p.assists || 0) > 0).sort((a, b) => (b.assists || 0) - (a.assists || 0));
-            const topGoals = goalsList.length ? goalsList[0].goals || 0 : 0;
+            const totalContrib = list.reduce((s, p) => s + ((Number(p.goals) || 0) + (Number(p.assists) || 0)), 0);
+            const goalsList = list.filter(p => (Number(p.goals) || 0) > 0).sort((a, b) => (Number(b.goals) || 0) - (Number(a.goals) || 0));
+            const assistsList = list.filter(p => (Number(p.assists) || 0) > 0).sort((a, b) => (Number(b.assists) || 0) - (Number(a.assists) || 0));
+            const topGoals = goalsList.length ? Number(goalsList[0].goals || 0) : 0;
 
             const card = document.createElement("div");
             card.className = "bg-fcDark rounded-2xl p-4 border border-black/40 shadow-ea-blue";
@@ -445,7 +516,7 @@
                 <div class="text-[12px] text-plGrey mb-2">Week distribution</div>
                 <div class="flex items-center gap-2">
                   ${list.map(p => {
-                    const val = p.goals || 0;
+                    const val = Number(p.goals) || 0;
                     const width = topGoals > 0 ? Math.max(6, Math.round((val / topGoals) * 100)) : 6;
                     return `<div title="${p.name} • ${val} goals" class="h-2 rounded-full" style="width:${width}px;background:linear-gradient(90deg,#00FF85,#00E6FF)"></div>`;
                   }).join('')}
@@ -542,10 +613,6 @@
           mobileSidebarPanel.classList.add("-translate-x-full");
         }
 
-        document.getElementById("themeToggle").addEventListener("click", () => {
-          document.documentElement.classList.toggle("dark");
-        });
-
         document.querySelectorAll('.nav-link').forEach(btn => {
           btn.addEventListener('click', () => {
             const target = btn.dataset.target;
@@ -562,6 +629,7 @@
           document.getElementById("weekTemplateOutput").textContent = JSON.stringify(next.template, null, 2);
         });
 
+        // Load data and initialize UI
         loadData();
       </script>
 
@@ -569,3 +637,4 @@
   </div>
 </body>
 </html>
+
