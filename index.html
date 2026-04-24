@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thursday Night Football |  FC Dashboard</title>
+  <title>Thursday Night Football | Premier League EA FC Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -277,6 +277,50 @@
           return { key, template };
         }
 
+        // Aggregates totals from weeks.json into the players array
+        function computeTotals() {
+          // Build a lookup for players by normalized name
+          const lookup = {};
+          // Seed lookup with players.json entries (preserve original names)
+          players.forEach(p => {
+            const key = (p.name || "").trim().toLowerCase();
+            lookup[key] = {
+              name: p.name,
+              goals: 0,
+              assists: 0
+            };
+          });
+
+          // Aggregate from weeks.json
+          Object.values(weeks).forEach(w => {
+            const list = w.players || [];
+            list.forEach(entry => {
+              const name = (entry.name || "").trim();
+              if (!name) return;
+              const key = name.toLowerCase();
+
+              // Ensure player exists in lookup; if not, create a new entry
+              if (!lookup[key]) {
+                lookup[key] = { name: name, goals: 0, assists: 0 };
+              }
+
+              lookup[key].goals += Number(entry.goals || 0);
+              lookup[key].assists += Number(entry.assists || 0);
+            });
+          });
+
+          // Write aggregated totals back into players array
+          players = Object.keys(lookup).map(k => {
+            const p = lookup[k];
+            return {
+              name: p.name,
+              goals: p.goals,
+              assists: p.assists,
+              total: p.goals + p.assists
+            };
+          });
+        }
+
         async function loadData() {
           try {
             const playersRes = await fetch("data/players.json");
@@ -287,7 +331,10 @@
             }
             players = await playersRes.json();
             weeks = await weeksRes.json();
+
+            // Aggregate totals from weeks into players
             computeTotals();
+
             renderLeaderboard();
             renderHero();
             renderWeeklyHistory();
@@ -296,10 +343,6 @@
           } catch (err) {
             console.error("Error loading data:", err);
           }
-        }
-
-        function computeTotals() {
-          players.forEach(p => { p.total = (p.goals || 0) + (p.assists || 0); });
         }
 
         function renderHero() {
