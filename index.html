@@ -13,6 +13,8 @@
       --accent: #FF2882;
       --neon: #00E6FF;
       --green: #00FF85;
+      --active-bg: rgba(255,40,130,0.12);
+      --active-border: rgba(255,40,130,0.28);
     }
     body { font-family: 'Poppins', system-ui, sans-serif; background: linear-gradient(135deg,#37003C 0%,#0A1A2F 100%); color: #F2F2F2; }
     .muted { color: var(--muted); }
@@ -24,6 +26,35 @@
     .hero-compact { padding:12px; }
     .hidden { display:none; }
     iframe { border-radius:10px; }
+
+    /* Active sort button styling */
+    .sort-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: transparent;
+      color: #EDEDED;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .18s ease;
+    }
+    .sort-btn:hover { transform: translateY(-2px); }
+    .sort-btn.active {
+      background: var(--active-bg);
+      border-color: var(--active-border);
+      box-shadow: 0 6px 18px rgba(255,40,130,0.08);
+      color: #FFF;
+    }
+
+    /* FLIP animation helpers for leaderboard rows */
+    .leaderboard-row { transition: transform 260ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease; will-change: transform, opacity; }
+    .leaderboard-row.fade-out { opacity: 0; transform: translateY(6px) scale(.995); }
+
+    /* Small responsive tweaks */
+    @media (max-width: 640px) {
+      .player-photo { width:56px; height:56px; }
+      .small-photo { width:40px; height:40px; }
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -99,10 +130,13 @@
     <section class="mb-6 card">
       <div class="flex items-center justify-between mb-3">
         <div>
-          <h3 class="text-lg font-semibold">Leaderboard</h3>
-          <div class="text-xs muted">Sorted by total contributions</div>
+          <h3 class="text-lg font-semibold" id="leaderboardTitle">Leaderboard</h3>
+          <div class="text-xs muted" id="leaderboardSubtitle">Sorted by goals</div>
         </div>
         <div class="flex items-center gap-2">
+          <button class="sort-btn" data-sort="goals" id="sortGoalsBtn">Goals</button>
+          <button class="sort-btn" data-sort="total" id="sortTotalBtn">Total</button>
+          <button class="sort-btn" data-sort="assists" id="sortAssistsBtn">Assists</button>
           <button id="showAllLeaderboard" class="px-3 py-1 rounded bg-white/10 text-sm">Show full leaderboard</button>
         </div>
       </div>
@@ -215,6 +249,9 @@
   </div>
 
   <script>
+    // ---------- Persistence keys ----------
+    const SORT_KEY = 'tnf_leaderboard_sort';
+
     // ---------- Data holders ----------
     let players = [];
     let weeks = {};
@@ -222,6 +259,9 @@
     let showFullLeaderboard = false;
     let showAllWeeks = false;
     let selectedTeamsPublished = false;
+
+    // ---------- Default sort: load from localStorage or fallback to 'goals' ----------
+    let currentSort = localStorage.getItem(SORT_KEY) || 'goals';
 
     // ---------- Utility: UK time check ----------
     function isBeforeWednesdayNoonUK() {
@@ -247,6 +287,7 @@
         weeks = await wRes.json();
         computeTotals();
         renderAll();
+        updateSortButtons(); // reflect persisted sort on load
       } catch (err) {
         console.error('loadData error', err);
       }
@@ -347,23 +388,92 @@
       });
     }
 
+    // Update sort button visuals
+    function updateSortButtons() {
+      document.querySelectorAll('.sort-btn').forEach(btn => {
+        const sort = btn.dataset.sort;
+        if (sort === currentSort) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      // update subtitle
+      const subtitle = document.getElementById('leaderboardSubtitle');
+      subtitle.textContent = `Sorted by ${currentSort}`;
+    }
+
+    // FLIP-enabled renderLeaderboard
     function renderLeaderboard() {
       const tbody = document.getElementById('leaderboardBody');
-      tbody.innerHTML = '';
+
+      // compute totals and sorted array
       players.forEach(p => p.total = (Number(p.goals)||0) + (Number(p.assists)||0));
-      const sorted = [...players].sort((a,b)=> (b.total||0)-(a.total||0));
+      let sorted = [...players].sort((a,b)=> (b[currentSort] || 0) - (a[currentSort] || 0));
+      if (currentSort === 'total') {
+        sorted = sorted.sort((a,b) => {
+          const diff = (b.total||0) - (a.total||0);
+          if (diff !== 0) return diff;
+          return (b.goals||0) - (a.goals||0);
+        });
+      }
+
+      // FLIP: record current positions
+      const oldRects = Array.from(tbody.children).reduce((m, row) => {
+        const key = row.dataset.name;
+        if (key) m[key] = row.getBoundingClientRect();
+        return m;
+      }, {});
+
+      // build new rows in a document fragment
+      const frag = document.createDocumentFragment();
       const limit = showFullLeaderboard ? sorted.length : Math.max(8, Math.ceil(sorted.length/2));
-      sorted.slice(0, limit).forEach((p,i) => {
+      sorted.slice(0, limit).forEach((p, i) => {
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-white/5';
+        tr.className = 'border-b border-white/5 leaderboard-row';
+        tr.dataset.name = p.name;
         tr.innerHTML = `<td class="py-2">${i+1}</td>
                         <td class="py-2 clickable"><div class="flex items-center gap-3"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div>${p.name}</div></div></td>
                         <td class="py-2 text-right">${p.goals||0}</td>
                         <td class="py-2 text-right">${p.assists||0}</td>
                         <td class="py-2 text-right font-semibold">${p.total||0}</td>`;
         tr.querySelectorAll('.clickable').forEach(el => el.addEventListener('click', ()=> openModal(p)));
-        tbody.appendChild(tr);
+        frag.appendChild(tr);
       });
+
+      // replace tbody content
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+
+      // FLIP: measure new positions and animate from old to new
+      const newRects = Array.from(tbody.children).reduce((m, row) => {
+        m[row.dataset.name] = row.getBoundingClientRect();
+        return m;
+      }, {});
+      Object.keys(newRects).forEach(name => {
+        const row = tbody.querySelector(`tr[data-name="${CSS.escape(name)}"]`);
+        const oldRect = oldRects[name];
+        const newRect = newRects[name];
+        if (oldRect && row) {
+          const dy = oldRect.top - newRect.top;
+          if (dy) {
+            row.style.transform = `translateY(${dy}px)`;
+            row.style.opacity = '0.98';
+            requestAnimationFrame(() => {
+              row.style.transition = 'transform 260ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease';
+              row.style.transform = '';
+              row.style.opacity = '';
+              row.addEventListener('transitionend', function te() {
+                row.style.transition = '';
+                row.removeEventListener('transitionend', te);
+              });
+            });
+          }
+        } else if (row) {
+          // new row: subtle fade-in
+          row.classList.add('fade-out');
+          requestAnimationFrame(() => row.classList.remove('fade-out'));
+        }
+      });
+
+      updateSortButtons();
     }
 
     function renderWeeks() {
@@ -494,7 +604,20 @@
       area.innerHTML = `<div class="text-sm"><strong>Selected (32)</strong>: ${selected.map(p=>p.name).join(', ')}</div><div class="text-sm mt-2"><strong>Reserves</strong>: ${reserves.map(p=>p.name).join(', ')}</div>`;
     }
 
-    // Controls
+    // Controls: sort buttons and persistence
+    function setSort(sortKey) {
+      currentSort = sortKey;
+      localStorage.setItem(SORT_KEY, currentSort);
+      renderLeaderboard();
+    }
+
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sort = btn.dataset.sort;
+        setSort(sort);
+      });
+    });
+
     document.getElementById('showAllLeaderboard').addEventListener('click', ()=> {
       showFullLeaderboard = !showFullLeaderboard;
       document.getElementById('showAllLeaderboard').textContent = showFullLeaderboard ? 'Show condensed' : 'Show full leaderboard';
