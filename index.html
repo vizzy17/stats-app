@@ -1,639 +1,503 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Thursday Night Football | Premier League EA FC Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>TNF Dashboard — Interim UI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            plPurple: '#37003C',
-            plPink: '#FF2882',
-            plGreen: '#00FF85',
-            fcNeon: '#00E6FF',
-            fcBlue: '#0A1A2F',
-            fcDark: '#050A0F',
-            plOff: '#F2F2F2',
-            plGrey: '#A0A0A0'
-          },
-          backgroundImage: {
-            'ea-gradient': 'linear-gradient(135deg, #37003C 0%, #0A1A2F 100%)',
-            'ea-card': 'linear-gradient(145deg, #37003C 0%, #FF2882 100%)',
-            'ea-card-dark': 'linear-gradient(145deg, #0A1A2F 0%, #37003C 100%)'
-          },
-          fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] },
-          borderRadius: { xl: '14px', '2xl': '20px' },
-          boxShadow: {
-            'ea-glow': '0 0 20px rgba(255, 40, 130, 0.4)',
-            'ea-green': '0 0 20px rgba(0, 255, 133, 0.4)',
-            'ea-blue': '0 0 20px rgba(0, 230, 255, 0.4)'
-          }
-        }
-      }
-    };
-  </script>
   <style>
-    /* small visual tweak for dark mode text swap */
-    .theme-label { display:inline-block; min-width:56px; text-align:left; }
+    :root { --muted: #A0A0A0; --card-bg: rgba(255,255,255,0.04); }
+    body { font-family: 'Poppins', system-ui, sans-serif; background: linear-gradient(135deg,#37003C 0%,#0A1A2F 100%); color: #F2F2F2; }
+    .muted { color: var(--muted); }
+    .player-photo { width:64px; height:64px; border-radius:10px; object-fit:cover; }
+    .small-photo { width:48px; height:48px; border-radius:8px; object-fit:cover; }
+    .card { background: var(--card-bg); border-radius:12px; padding:12px; }
+    .clickable { cursor:pointer; }
+    .hidden { display:none; }
+    iframe { border-radius:8px; }
   </style>
 </head>
-<body class="bg-ea-gradient text-plOff font-sans transition-colors duration-300">
-  <div id="app" class="min-h-screen flex">
+<body class="min-h-screen">
+  <div class="max-w-6xl mx-auto p-4">
 
-    <aside class="hidden md:flex flex-col w-64 bg-plPurple text-plOff border-r border-black/40 shadow-ea-blue">
-      <div class="h-16 flex items-center px-5 border-b border-black/40">
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-xl bg-plPink flex items-center justify-center text-xs font-semibold text-white">TNF</div>
-          <div>
-            <div class="text-sm font-semibold">Thursday Night Football</div>
-            <div class="text-[11px] text-plGrey">EA FC Hybrid Dashboard</div>
-          </div>
-        </div>
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-4">
+      <div>
+        <div class="text-lg font-semibold">TNF — Premier League × EA FC Hybrid</div>
+        <div id="headerSubtitle" class="text-sm muted">Compact dashboard</div>
       </div>
+      <div class="flex items-center gap-3">
+        <div id="headerWeek" class="text-sm muted">WEEK • 0 goals</div>
+        <button id="themeToggle" class="px-3 py-1 rounded bg-white/10 text-sm">Toggle theme</button>
+      </div>
+    </header>
 
-      <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
-        <div class="text-[11px] uppercase tracking-wide text-plGrey px-2 mb-1">Overview</div>
-
-        <button data-target="#leaderboard" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition">
-          <span class="text-xs">🏆</span><span>Leaderboard</span>
-        </button>
-
-        <button data-target="#weekly-history" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition">
-          <span class="text-xs">📅</span><span>Weekly Stats</span>
-        </button>
-
-        <button data-target="#players" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition">
-          <span class="text-xs">👤</span><span>Players</span>
-        </button>
-
-        <button data-target="#admin" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition">
-          <span class="text-xs">🔐</span><span>Admin</span>
-        </button>
-
-        <div class="mt-4 text-[11px] uppercase tracking-wide text-plGrey px-2 mb-1">Meta</div>
-
-        <button data-target="#top" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition">
-          <span class="text-xs">⬆</span><span>Back to top</span>
-        </button>
-      </nav>
-
-      <div class="px-4 py-4 border-t border-black/40 text-[11px] text-plGrey">
-        <div class="flex items-center justify-between mb-1">
-          <span>Version</span><span class="text-plOff">v1.0.0</span>
-        </div>
+    <!-- Compact hero + top players -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+      <div class="md:col-span-2 card">
         <div class="flex items-center justify-between">
-          <span>Theme</span>
-          <button id="sidebarThemeToggle" class="text-xs px-2 py-1 rounded-xl border border-plGrey/40 hover:border-plGreen hover:text-plGreen transition">Toggle</button>
-        </div>
-      </div>
-    </aside>
-
-    <div class="flex-1 flex flex-col min-w-0">
-      <header id="top" class="h-16 flex items-center justify-between px-4 md:px-6 bg-plPurple border-b border-black/40 shadow-ea-blue">
-        <div class="flex items-center gap-3">
-          <button class="md:hidden text-plOff text-xl" id="mobileMenuToggle">☰</button>
           <div>
-            <div id="headerTitle" class="text-sm font-semibold">Dashboard</div>
-            <div id="headerSubtitle" class="text-[11px] text-plGrey">Premier League × EA FC Hybrid</div>
+            <div class="text-xs muted uppercase">Total Goals</div>
+            <div id="heroGoals" class="text-2xl font-bold">0</div>
+            <div class="text-xs muted">Across all weeks</div>
+          </div>
+
+          <div>
+            <div class="text-xs muted uppercase">Total Assists</div>
+            <div id="heroAssists" class="text-2xl font-bold">0</div>
+            <div class="text-xs muted">Across all weeks</div>
+          </div>
+
+          <div>
+            <div class="text-xs muted uppercase">Total Contributions</div>
+            <div id="heroTotal" class="text-2xl font-bold">0</div>
+            <div class="text-xs muted">Goals + Assists</div>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="hidden sm:flex gap-3 text-[11px] text-plGrey">
-            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">
-              <span id="headerWeekLabel" class="font-medium">WEEK 12</span> • <span id="headerWeekGoals" class="text-plOff font-medium">72</span> goals
-            </div>
-            <div class="px-2 py-1 rounded-xl bg-plPink/20 border border-plPink/40">
-              Players • <span id="headerPlayersCount" class="text-plOff font-medium">29</span>
-            </div>
+        <!-- Top players preview -->
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs muted mb-2">Top 3 Scorers</div>
+            <div id="topScorers" class="flex gap-3 items-center"></div>
           </div>
-
-          <button id="themeToggle" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-plGrey/40 text-[11px] text-plGrey hover:border-plGreen hover:text-plGreen transition">
-            <span id="themeIcon">🌙</span>
-            <span class="theme-label" id="themeLabel">Dark mode</span>
-          </button>
+          <div>
+            <div class="text-xs muted mb-2">Top 3 Assist Leaders</div>
+            <div id="topAssists" class="flex gap-3 items-center"></div>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <div id="mobileSidebar" class="fixed inset-0 bg-black/60 z-40 opacity-0 pointer-events-none transition-opacity md:hidden">
-        <div id="mobileSidebarPanel" class="w-64 h-full bg-plPurple border-r border-black/40 p-4 flex flex-col transform -translate-x-full transition-transform duration-300">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <div class="h-8 w-8 rounded-xl bg-plPink flex items-center justify-center text-[11px] font-semibold text-white">TNF</div>
+      <aside class="card">
+        <div class="text-xs muted">Players</div>
+        <div id="playersCount" class="text-2xl font-bold">0</div>
+        <div class="mt-3 text-xs muted">Next match: <span id="nextMatch">—</span></div>
+      </aside>
+    </section>
+
+    <!-- Leaderboard (condensed) -->
+    <section class="mb-6 card">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h3 class="font-semibold">Leaderboard</h3>
+          <div class="text-xs muted">Sorted by total contributions</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="showAllLeaderboard" class="px-3 py-1 rounded bg-white/10 text-sm">Show full leaderboard</button>
+        </div>
+      </div>
+
+      <div class="overflow-auto max-h-64">
+        <table class="w-full text-sm">
+          <thead class="text-xs muted">
+            <tr>
+              <th class="text-left">#</th>
+              <th class="text-left">Player</th>
+              <th class="text-right">G</th>
+              <th class="text-right">A</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Weekly Stats (two recent weeks) -->
+    <section class="mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold">Weekly Stats</h3>
+        <button id="showMoreWeeks" class="px-3 py-1 rounded bg-white/10 text-sm">Show more weeks</button>
+      </div>
+
+      <div id="weeksContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- Players grid -->
+    <section class="mb-6">
+      <h3 class="font-semibold mb-2">Players</h3>
+      <div id="playersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+    </section>
+
+    <!-- Selected Teams (final place to show teams after selection) -->
+    <section class="mb-6 card">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-semibold">Selected Teams (Published)</h3>
+          <div class="text-xs muted">Final selected teams will appear here when published by admin</div>
+        </div>
+        <div>
+          <button id="publishSelectedBtn" class="px-3 py-1 rounded bg-green-500 text-black text-sm">Publish (admin)</button>
+        </div>
+      </div>
+      <div id="selectedTeamsArea" class="mt-3 text-sm muted">No teams published yet.</div>
+    </section>
+
+    <!-- Admin quick actions -->
+    <section class="mb-6 card">
+      <h3 class="font-semibold mb-2">Admin — Receipts, Payments & Slot Release</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="p-3 bg-black/10 rounded">
+          <div class="text-sm muted mb-2">Upload receipt (player proof)</div>
+          <div class="flex gap-2">
+            <input id="receiptPlayer" placeholder="Player name" class="flex-1 px-2 py-1 rounded bg-black/20" />
+            <input id="receiptAmount" placeholder="£" class="w-20 px-2 py-1 rounded bg-black/20" />
+            <input id="receiptFile" type="file" accept="image/*" class="hidden" />
+            <button id="chooseFileBtn" class="px-3 py-1 rounded bg-white/10">Choose file</button>
+            <button id="uploadReceiptBtn" class="px-3 py-1 rounded bg-green-500 text-black">Upload</button>
+          </div>
+          <div id="receiptStatus" class="mt-2 text-xs muted"></div>
+          <div id="paymentsLog" class="mt-3 text-xs muted max-h-32 overflow-auto"></div>
+        </div>
+
+        <div class="p-3 bg-black/10 rounded">
+          <div class="text-sm muted mb-2">Slot management</div>
+          <div class="text-xs muted mb-2">First 32 can release slot until <strong>Wednesday 12:00 UK</strong>.</div>
+          <div class="flex gap-2">
+            <input id="releasePlayer" placeholder="Player name to release" class="flex-1 px-2 py-1 rounded bg-black/20" />
+            <button id="releaseBtn" class="px-3 py-1 rounded bg-yellow-400 text-black">Release slot</button>
+          </div>
+          <div id="releaseStatus" class="mt-2 text-xs muted"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Player modal -->
+    <div id="playerModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+      <div class="bg-[#0A1A2F] rounded-xl p-4 w-full max-w-md">
+        <div class="flex items-start gap-3">
+          <img id="modalPhoto" class="player-photo" src="" alt="photo" />
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
               <div>
-                <div class="text-sm font-semibold">Thursday Night Football</div>
-                <div class="text-[11px] text-plGrey">EA FC Hybrid</div>
+                <div id="modalName" class="text-lg font-semibold"></div>
+                <div id="modalMeta" class="text-xs muted"></div>
+              </div>
+              <button id="modalClose" class="px-2 py-1 rounded bg-white/10">Close</button>
+            </div>
+
+            <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div class="text-xs muted">Goals</div>
+                <div id="modalGoals" class="text-xl font-bold">0</div>
+              </div>
+              <div>
+                <div class="text-xs muted">Assists</div>
+                <div id="modalAssists" class="text-xl font-bold">0</div>
+              </div>
+              <div>
+                <div class="text-xs muted">Total</div>
+                <div id="modalTotal" class="text-xl font-bold">0</div>
               </div>
             </div>
-            <button id="mobileSidebarClose" class="text-plGrey text-lg">✕</button>
-          </div>
 
-          <nav class="flex-1 space-y-1 text-sm">
-            <button data-target="#leaderboard" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">🏆</span><span>Leaderboard</span></button>
-            <button data-target="#weekly-history" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">📅</span><span>Weekly Stats</span></button>
-            <button data-target="#players" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">👤</span><span>Players</span></button>
-            <button data-target="#admin" class="nav-link w-full flex items-center gap-2 px-3 py-2 rounded-xl text-plGrey hover:bg-plPink/20 hover:text-plOff transition"><span class="text-xs">🔐</span><span>Admin</span></button>
-          </nav>
-
-          <div class="mt-4">
-            <button id="mobileThemeToggle" class="w-full px-3 py-2 rounded-xl border border-plGrey/40 text-plGrey hover:border-plGreen hover:text-plGreen transition">Toggle theme</button>
+            <div id="modalExtra" class="mt-3 text-sm muted"></div>
           </div>
         </div>
       </div>
-
-      <main class="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-10">
-        <section id="hero" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="bg-ea-card rounded-2xl p-5 border border-plPink/40 shadow-ea-pink">
-            <div class="text-[12px] uppercase tracking-wide text-plOff/70">Total Goals</div>
-            <div id="heroGoals" class="text-3xl font-bold mt-1 text-plGreen">0</div>
-            <div class="text-[11px] text-plGrey mt-2">Across all weeks</div>
-          </div>
-
-          <div class="bg-ea-card-dark rounded-2xl p-5 border border-plGreen/40 shadow-ea-green">
-            <div class="text-[12px] uppercase tracking-wide text-plOff/70">Total Assists</div>
-            <div id="heroAssists" class="text-3xl font-bold mt-1 text-plGreen">0</div>
-            <div class="text-[11px] text-plGrey mt-2">Across all weeks</div>
-          </div>
-
-          <div class="bg-ea-card rounded-2xl p-5 border border-fcNeon/40 shadow-ea-blue">
-            <div class="text-[12px] uppercase tracking-wide text-plOff/70">Total Contributions</div>
-            <div id="heroTotal" class="text-3xl font-bold mt-1 text-plGreen">0</div>
-            <div class="text-[11px] text-plGrey mt-2">Goals + Assists</div>
-          </div>
-        </section>
-
-        <section id="leaderboard" class="space-y-4">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-lg font-semibold">Leaderboard</h2>
-              <p class="text-[12px] text-plGrey">Sorted by total contributions</p>
-            </div>
-          </div>
-
-          <div class="bg-fcDark rounded-2xl shadow-ea-blue border border-black/40 p-4 space-y-3">
-            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-              <div class="relative w-full sm:w-72">
-                <input id="playerSearch" type="text" placeholder="Search players..." class="w-full rounded-xl border border-black/40 bg-fcBlue px-3 py-2 text-[13px] text-plOff placeholder:text-plGrey focus:outline-none focus:ring-2 focus:ring-plGreen" />
-                <span class="absolute right-3 top-2.5 text-plGrey text-[11px]">⌕</span>
-              </div>
-
-              <div class="flex gap-2 text-[11px]">
-                <button data-sort="total" class="sort-btn px-3 py-1.5 rounded-xl border border-black/40 text-plGrey hover:border-plGreen hover:text-plGreen transition">Sort by Total</button>
-                <button data-sort="goals" class="sort-btn px-3 py-1.5 rounded-xl border border-black/40 text-plGrey hover:border-plGreen hover:text-plGreen transition">Sort by Goals</button>
-                <button data-sort="assists" class="sort-btn px-3 py-1.5 rounded-xl border border-black/40 text-plGrey hover:border-plGreen hover:text-plGreen transition">Sort by Assists</button>
-              </div>
-            </div>
-
-            <div class="overflow-x-auto rounded-xl border border-black/40">
-              <table class="min-w-full text-[13px] table-auto">
-                <thead class="bg-plPurple text-plOff uppercase text-[11px] tracking-wide">
-                  <tr>
-                    <th class="px-4 py-2 text-left font-medium">Rank</th>
-                    <th class="px-4 py-2 text-left font-medium">Player</th>
-                    <th class="px-4 py-2 text-right font-medium">Goals</th>
-                    <th class="px-4 py-2 text-right font-medium">Assists</th>
-                    <th class="px-4 py-2 text-right font-medium whitespace-nowrap">Total</th>
-                  </tr>
-                </thead>
-                <tbody id="leaderboardBody" class="divide-y divide-black/40"></tbody>
-              </table>
-
-              <div id="leaderboardEmpty" class="hidden py-6 text-center text-plGrey text-[12px]">No players match your search.</div>
-            </div>
-          </div>
-        </section>
-
-        <section id="weekly-history" class="space-y-4">
-          <h2 class="text-lg font-semibold">Weekly Stats</h2>
-          <div id="weeklyHistoryContainer" class="space-y-3"></div>
-        </section>
-
-        <section id="players" class="space-y-4">
-          <h2 class="text-lg font-semibold">Players</h2>
-          <div id="playersList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-        </section>
-
-        <section id="admin" class="space-y-4">
-          <h2 class="text-lg font-semibold">Admin Panel</h2>
-          <div class="bg-fcDark rounded-2xl p-5 border border-black/40 shadow-ea-blue">
-            <p class="text-[12px] text-plGrey mb-3">This dashboard is fully data‑driven. Update the JSON files below:</p>
-            <ul class="text-[13px] space-y-2">
-              <li><strong>data/players.json</strong> — update player list and totals</li>
-              <li><strong>data/weeks.json</strong> — add weekly scorers and date</li>
-            </ul>
-
-            <p id="nextMatchDate" class="text-[12px] text-plGrey mt-3"></p>
-
-            <button id="generateWeekBtn" class="mt-4 px-3 py-2 rounded-xl border border-plGrey/40 text-[12px] hover:border-plGreen hover:text-plGreen transition">
-              Generate Next Week Template
-            </button>
-
-            <pre id="weekTemplateOutput" class="mt-3 text-[11px] bg-black/30 p-3 rounded-xl overflow-x-auto"></pre>
-
-            <p class="text-[12px] text-plGrey mt-3">No HTML changes required for weekly updates.</p>
-          </div>
-        </section>
-      </main>
-
-      <div id="playerModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-plPurple rounded-2xl w-full max-w-md p-6 border border-plPink/40 shadow-ea-pink relative">
-          <button id="modalClose" class="absolute top-3 right-3 text-plOff text-xl hover:text-plPink transition">✕</button>
-          <div class="flex justify-center mb-4">
-            <div class="w-32 h-32 rounded-2xl overflow-hidden border-4 border-plPink shadow-ea-pink">
-              <img id="modalPhoto" src="" class="w-full h-full object-cover" />
-            </div>
-          </div>
-          <h2 id="modalName" class="text-center text-xl font-bold text-plOff"></h2>
-          <div class="grid grid-cols-3 gap-3 mt-6 text-center">
-            <div class="bg-fcDark p-3 rounded-xl border border-plGreen/40 shadow-ea-green">
-              <div class="text-[11px] text-plGrey">Goals</div>
-              <div id="modalGoals" class="text-2xl font-bold text-plGreen"></div>
-            </div>
-            <div class="bg-fcDark p-3 rounded-xl border border-plGreen/40 shadow-ea-green">
-              <div class="text-[11px] text-plGrey">Assists</div>
-              <div id="modalAssists" class="text-2xl font-bold text-plGreen"></div>
-            </div>
-            <div class="bg-fcDark p-3 rounded-xl border border-fcNeon/40 shadow-ea-blue">
-              <div class="text-[11px] text-plGrey">Total</div>
-              <div id="modalTotal" class="text-2xl font-bold text-plGreen"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <script>
-        let players = [];
-        let weeks = {};
-        let currentSort = "total";
-
-        // Theme helpers: persist in localStorage and apply to documentElement
-        function applyTheme(theme) {
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.getElementById('themeIcon').textContent = '☀️';
-            document.getElementById('themeLabel').textContent = 'Light';
-          } else {
-            document.documentElement.classList.remove('dark');
-            document.getElementById('themeIcon').textContent = '🌙';
-            document.getElementById('themeLabel').textContent = 'Dark mode';
-          }
-          localStorage.setItem('tnf_theme', theme);
-        }
-
-        // Initialize theme from localStorage or system preference
-        (function initTheme() {
-          const saved = localStorage.getItem('tnf_theme');
-          if (saved) {
-            applyTheme(saved);
-          } else {
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            applyTheme(prefersDark ? 'dark' : 'light');
-          }
-        })();
-
-        // Toggle theme handlers
-        document.getElementById('themeToggle').addEventListener('click', () => {
-          const isDark = document.documentElement.classList.contains('dark');
-          applyTheme(isDark ? 'light' : 'dark');
-        });
-        document.getElementById('sidebarThemeToggle').addEventListener('click', () => {
-          const isDark = document.documentElement.classList.contains('dark');
-          applyTheme(isDark ? 'light' : 'dark');
-        });
-        document.getElementById('mobileThemeToggle')?.addEventListener('click', () => {
-          const isDark = document.documentElement.classList.contains('dark');
-          applyTheme(isDark ? 'light' : 'dark');
-        });
-
-        function getNextThursday() {
-          const today = new Date();
-          const day = today.getDay();
-          const daysUntilThursday = (4 - day + 7) % 7 || 7;
-          const nextThursday = new Date(today);
-          nextThursday.setDate(today.getDate() + daysUntilThursday);
-          return nextThursday.toISOString().split("T")[0];
-        }
-
-        function generateNextWeekTemplate() {
-          const nextDate = getNextThursday();
-          const existing = Object.keys(weeks).length;
-          const weekNumber = existing + 1;
-          const key = "WEEK" + weekNumber;
-          const template = {};
-          template[key] = { date: nextDate, players: [] };
-          return { key, template };
-        }
-
-        // Aggregates totals from weeks.json into the players array
-        function computeTotals() {
-          const lookup = {};
-          // Seed lookup with players.json entries (preserve original names)
-          players.forEach(p => {
-            const key = (p.name || "").trim().toLowerCase();
-            lookup[key] = {
-              name: p.name,
-              goals: 0,
-              assists: 0
-            };
-          });
-
-          // Aggregate from weeks.json
-          Object.values(weeks).forEach(w => {
-            const list = w.players || [];
-            list.forEach(entry => {
-              const name = (entry.name || "").trim();
-              if (!name) return;
-              const key = name.toLowerCase();
-
-              if (!lookup[key]) {
-                lookup[key] = { name: name, goals: 0, assists: 0 };
-              }
-
-              lookup[key].goals += Number(entry.goals || 0);
-              lookup[key].assists += Number(entry.assists || 0);
-            });
-          });
-
-          // Write aggregated totals back into players array
-          players = Object.keys(lookup).map(k => {
-            const p = lookup[k];
-            return {
-              name: p.name,
-              goals: p.goals,
-              assists: p.assists,
-              total: p.goals + p.assists
-            };
-          });
-        }
-
-        async function loadData() {
-          try {
-            const playersRes = await fetch("data/players.json");
-            const weeksRes = await fetch("data/weeks.json");
-            if (!playersRes.ok || !weeksRes.ok) {
-              console.warn("Failed to load JSON data. Check paths: data/players.json and data/weeks.json");
-              return;
-            }
-            players = await playersRes.json();
-            weeks = await weeksRes.json();
-
-            // Aggregate totals from weeks into players
-            computeTotals();
-
-            // Update header dynamic values
-            updateHeaderSummary();
-
-            renderLeaderboard();
-            renderHero();
-            renderWeeklyHistory();
-            renderPlayers();
-            document.getElementById("nextMatchDate").textContent = "Next Match Date: " + getNextThursday();
-          } catch (err) {
-            console.error("Error loading data:", err);
-          }
-        }
-
-        // Update header week label and players count dynamically
-        function updateHeaderSummary() {
-          const weekKeys = Object.keys(weeks).sort((a,b) => {
-            // keep natural order WEEK1, WEEK2...
-            const na = Number(a.replace(/\D/g,'')) || 0;
-            const nb = Number(b.replace(/\D/g,'')) || 0;
-            return na - nb;
-          });
-          const latestWeek = weekKeys.length ? weekKeys[weekKeys.length - 1] : 'WEEK 1';
-          const latestObj = weeks[latestWeek] || {};
-          const totalGoalsLatest = (latestObj.players || []).reduce((s,p) => s + (Number(p.goals||0) + Number(p.assists||0)), 0);
-          document.getElementById('headerWeekLabel').textContent = latestWeek;
-          document.getElementById('headerWeekGoals').textContent = totalGoalsLatest;
-          document.getElementById('headerPlayersCount').textContent = players.length;
-          // update subtitle to show latest week and date
-          const dateLabel = latestObj.date ? ` • ${latestObj.date}` : '';
-          document.getElementById('headerSubtitle').textContent = `Premier League × EA FC Hybrid${dateLabel}`;
-        }
-
-        function renderHero() {
-          let totalGoals = 0;
-          let totalAssists = 0;
-          Object.values(weeks).forEach(w => {
-            const list = w.players || [];
-            list.forEach(p => { totalGoals += (Number(p.goals) || 0); totalAssists += (Number(p.assists) || 0); });
-          });
-          document.getElementById("heroGoals").textContent = totalGoals;
-          document.getElementById("heroAssists").textContent = totalAssists;
-          document.getElementById("heroTotal").textContent = totalGoals + totalAssists;
-        }
-
-        function renderLeaderboard() {
-          const tbody = document.getElementById("leaderboardBody");
-          tbody.innerHTML = "";
-          players.forEach(p => { p.total = (Number(p.goals) || 0) + (Number(p.assists) || 0); });
-          let sorted = [...players].sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0));
-          sorted.forEach((p, index) => {
-            const row = document.createElement("tr");
-            row.className = "hover:bg-plPink/10 transition cursor-pointer";
-            row.innerHTML = `
-              <td class="px-4 py-2">${index + 1}</td>
-              <td class="px-4 py-2">${p.name}</td>
-              <td class="px-4 py-2 text-right">${p.goals || 0}</td>
-              <td class="px-4 py-2 text-right">${p.assists || 0}</td>
-              <td class="px-4 py-2 text-right font-bold text-plGreen">${p.total || 0}</td>
-            `;
-            row.addEventListener("click", () => openModal(p));
-            tbody.appendChild(row);
-          });
-          document.getElementById("leaderboardEmpty").classList.toggle("hidden", sorted.length > 0);
-        }
-
-        function renderWeeklyHistory() {
-          const container = document.getElementById("weeklyHistoryContainer");
-          container.innerHTML = "";
-          Object.keys(weeks).forEach(weekName => {
-            const weekObj = weeks[weekName] || {};
-            const list = weekObj.players || [];
-            const dateLabel = weekObj.date || "";
-            const totalContrib = list.reduce((s, p) => s + ((Number(p.goals) || 0) + (Number(p.assists) || 0)), 0);
-            const goalsList = list.filter(p => (Number(p.goals) || 0) > 0).sort((a, b) => (Number(b.goals) || 0) - (Number(a.goals) || 0));
-            const assistsList = list.filter(p => (Number(p.assists) || 0) > 0).sort((a, b) => (Number(b.assists) || 0) - (Number(a.assists) || 0));
-            const topGoals = goalsList.length ? Number(goalsList[0].goals || 0) : 0;
-
-            const card = document.createElement("div");
-            card.className = "bg-fcDark rounded-2xl p-4 border border-black/40 shadow-ea-blue";
-
-            card.innerHTML = `
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="flex items-baseline gap-3">
-                    <h3 class="font-semibold text-lg">${weekName}</h3>
-                    <div class="text-[12px] text-plGrey">${dateLabel}</div>
-                  </div>
-                  <div class="text-[12px] text-plGrey mt-1">Total contributions: <span class="text-plGreen font-bold">${totalContrib}</span></div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <button class="toggle-week text-sm px-3 py-1 rounded-xl border border-black/30 text-plGrey">Details</button>
-                </div>
-              </div>
-
-              <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 hidden week-details">
-                <div>
-                  <div class="text-sm font-medium mb-2">Goalscorers</div>
-                  <div class="space-y-2 goals-list">
-                    ${goalsList.map((p, i) => `
-                      <div class="flex items-center gap-3 p-2 rounded-xl ${i===0 ? 'shadow-ea-green border border-plGreen/40 bg-black/10' : 'bg-black/10'}">
-                        <img src="photos/${encodeURIComponent(p.name)}.jpg" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover" />
-                        <div class="flex-1">
-                          <div class="text-[13px] font-semibold">${p.name}</div>
-                          <div class="text-[11px] text-plGrey">G: ${p.goals || 0}</div>
-                        </div>
-                        <div class="text-plGreen font-bold">${p.goals || 0}</div>
-                      </div>`).join("")}
-                  </div>
-                </div>
-
-                <div>
-                  <div class="text-sm font-medium mb-2">Assists</div>
-                  <div class="space-y-2 assists-list">
-                    ${assistsList.map((p, i) => `
-                      <div class="flex items-center gap-3 p-2 rounded-xl ${i===0 ? 'shadow-ea-blue border border-fcNeon/40 bg-black/10' : 'bg-black/10'}">
-                        <img src="photos/${encodeURIComponent(p.name)}.jpg" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover" />
-                        <div class="flex-1">
-                          <div class="text-[13px] font-semibold">${p.name}</div>
-                          <div class="text-[11px] text-plGrey">A: ${p.assists || 0}</div>
-                        </div>
-                        <div class="text-plGreen font-bold">${p.assists || 0}</div>
-                      </div>`).join("")}
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-3">
-                <div class="text-[12px] text-plGrey mb-2">Week distribution</div>
-                <div class="flex items-center gap-2">
-                  ${list.map(p => {
-                    const val = Number(p.goals) || 0;
-                    const width = topGoals > 0 ? Math.max(6, Math.round((val / topGoals) * 100)) : 6;
-                    return `<div title="${p.name} • ${val} goals" class="h-2 rounded-full" style="width:${width}px;background:linear-gradient(90deg,#00FF85,#00E6FF)"></div>`;
-                  }).join('')}
-                </div>
-              </div>
-            `;
-
-            const toggleBtn = card.querySelector('.toggle-week');
-            const details = card.querySelector('.week-details');
-            toggleBtn.addEventListener('click', () => details.classList.toggle('hidden'));
-
-            // open modal when clicking player name inside lists
-            card.querySelectorAll('.goals-list .font-semibold, .assists-list .font-semibold').forEach(nameEl => {
-              const parent = nameEl.closest('div');
-              parent?.addEventListener('click', () => {
-                const playerName = nameEl.textContent.trim();
-                const player = players.find(p => p.name === playerName);
-                if (player) openModal(player);
-              });
-            });
-
-            container.appendChild(card);
-          });
-        }
-
-        function renderPlayers() {
-          const container = document.getElementById("playersList");
-          container.innerHTML = "";
-          players.forEach(p => {
-            const card = document.createElement("div");
-            card.className = "bg-fcDark rounded-xl p-3 border border-black/40 shadow-ea-blue cursor-pointer hover:border-plPink transition";
-            const safeName = encodeURIComponent(p.name);
-            card.innerHTML = `
-              <div class="w-full h-32 rounded-xl overflow-hidden mb-2 bg-black/10 flex items-center justify-center">
-                <img src="photos/${safeName}.jpg" onerror="this.style.display='none'" class="w-full h-full object-cover" />
-              </div>
-              <div class="text-[13px] font-semibold">${p.name}</div>
-              <div class="text-[11px] text-plGrey">G: ${p.goals || 0} • A: ${p.assists || 0}</div>
-            `;
-            card.addEventListener("click", () => openModal(p));
-            container.appendChild(card);
-          });
-        }
-
-        function openModal(p) {
-          document.getElementById("modalName").textContent = p.name;
-          document.getElementById("modalGoals").textContent = p.goals || 0;
-          document.getElementById("modalAssists").textContent = p.assists || 0;
-          document.getElementById("modalTotal").textContent = p.total || 0;
-          const photo = document.getElementById("modalPhoto");
-          photo.src = `photos/${encodeURIComponent(p.name)}.jpg`;
-          photo.onerror = () => { photo.src = ''; };
-          document.getElementById("playerModal").classList.remove("hidden");
-        }
-
-        document.getElementById("modalClose").addEventListener("click", () => {
-          document.getElementById("playerModal").classList.add("hidden");
-        });
-
-        document.querySelectorAll(".sort-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            currentSort = btn.dataset.sort || "total";
-            renderLeaderboard();
-          });
-        });
-
-        document.getElementById("playerSearch").addEventListener("input", e => {
-          const term = e.target.value.toLowerCase();
-          const rows = document.querySelectorAll("#leaderboardBody tr");
-          rows.forEach(row => {
-            const name = (row.children[1]?.textContent || "").toLowerCase();
-            row.style.display = name.includes(term) ? "" : "none";
-          });
-          const anyVisible = Array.from(rows).some(r => r.style.display !== "none");
-          document.getElementById("leaderboardEmpty").classList.toggle("hidden", anyVisible);
-        });
-
-        const mobileMenuToggle = document.getElementById("mobileMenuToggle");
-        const mobileSidebar = document.getElementById("mobileSidebar");
-        const mobileSidebarPanel = document.getElementById("mobileSidebarPanel");
-        const mobileSidebarClose = document.getElementById("mobileSidebarClose");
-
-        if (mobileMenuToggle && mobileSidebar && mobileSidebarPanel) {
-          mobileMenuToggle.addEventListener("click", () => {
-            mobileSidebar.classList.remove("opacity-0", "pointer-events-none");
-            mobileSidebarPanel.classList.remove("-translate-x-full");
-          });
-          mobileSidebarClose?.addEventListener("click", closeMobileSidebar);
-          mobileSidebar.addEventListener("click", (e) => { if (e.target === mobileSidebar) closeMobileSidebar(); });
-        }
-
-        function closeMobileSidebar() {
-          mobileSidebar.classList.add("opacity-0", "pointer-events-none");
-          mobileSidebarPanel.classList.add("-translate-x-full");
-        }
-
-        document.querySelectorAll('.nav-link').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const target = btn.dataset.target;
-            if (target) {
-              const el = document.querySelector(target);
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            closeMobileSidebar();
-          });
-        });
-
-        document.getElementById("generateWeekBtn").addEventListener("click", () => {
-          const next = generateNextWeekTemplate();
-          document.getElementById("weekTemplateOutput").textContent = JSON.stringify(next.template, null, 2);
-        });
-
-        // Load data and initialize UI
-        loadData();
-      </script>
-
     </div>
+
   </div>
+
+  <script>
+    // -------------------------
+    // Interim UI logic (client-side simulation)
+    // Replace simulated actions with backend calls when ready
+    // -------------------------
+    let players = [];
+    let weeks = {};
+    let payments = []; // local simulation
+    let showFullLeaderboard = false;
+    let showAllWeeks = false;
+    let selectedTeamsPublished = false;
+
+    // Utility: UK time check for Wednesday 12:00
+    function isBeforeWednesdayNoonUK() {
+      const now = new Date();
+      const london = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
+      const lwDay = london.getDay(); // 0 Sun .. 6 Sat
+      const wednesday = new Date(london);
+      const diff = (3 - lwDay + 7) % 7;
+      wednesday.setDate(london.getDate() + diff);
+      wednesday.setHours(12,0,0,0);
+      return london.getTime() < wednesday.getTime();
+    }
+
+    // Load data from data/players.json and data/weeks.json
+    async function loadData() {
+      try {
+        const [pRes, wRes] = await Promise.all([fetch('data/players.json'), fetch('data/weeks.json')]);
+        if (!pRes.ok || !wRes.ok) {
+          console.warn('Missing data files; ensure data/players.json and data/weeks.json exist.');
+          return;
+        }
+        players = await pRes.json();
+        weeks = await wRes.json();
+        computeTotals();
+        renderAll();
+      } catch (err) {
+        console.error('loadData error', err);
+      }
+    }
+
+    // Aggregate totals from weeks into players
+    function computeTotals() {
+      const lookup = {};
+      players.forEach(p => {
+        const key = (p.name||'').trim().toLowerCase();
+        lookup[key] = { name: p.name, goals: 0, assists: 0 };
+      });
+      Object.values(weeks).forEach(w => {
+        (w.players||[]).forEach(e => {
+          const name = (e.name||'').trim();
+          if (!name) return;
+          const key = name.toLowerCase();
+          if (!lookup[key]) lookup[key] = { name, goals:0, assists:0 };
+          lookup[key].goals += Number(e.goals||0);
+          lookup[key].assists += Number(e.assists||0);
+        });
+      });
+      players = Object.keys(lookup).map(k => {
+        const p = lookup[k];
+        return { name: p.name, goals: p.goals, assists: p.assists, total: p.goals + p.assists };
+      });
+    }
+
+    // Render everything
+    function renderAll() {
+      renderHeader();
+      renderHero();
+      renderTopPlayers();
+      renderLeaderboard();
+      renderWeeks();
+      renderPlayersGrid();
+      renderPaymentsLog();
+      renderSelectedTeams();
+    }
+
+    function renderHeader() {
+      const weekKeys = Object.keys(weeks).sort((a,b) => {
+        const na = Number(a.replace(/\D/g,''))||0;
+        const nb = Number(b.replace(/\D/g,''))||0;
+        return na - nb;
+      });
+      const latest = weekKeys.length ? weekKeys[weekKeys.length-1] : 'WEEK1';
+      const latestObj = weeks[latest] || {};
+      const totalGoals = (latestObj.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
+      document.getElementById('headerWeek').textContent = `${latest} • ${totalGoals} goals`;
+      document.getElementById('nextMatch').textContent = latestObj.date || '—';
+      document.getElementById('playersCount').textContent = players.length;
+    }
+
+    function renderHero() {
+      const totals = Object.values(weeks).reduce((acc,w) => {
+        (w.players||[]).forEach(p => { acc.goals += Number(p.goals||0); acc.assists += Number(p.assists||0); });
+        return acc;
+      }, {goals:0, assists:0});
+      document.getElementById('heroGoals').textContent = totals.goals;
+      document.getElementById('heroAssists').textContent = totals.assists;
+      document.getElementById('heroTotal').textContent = totals.goals + totals.assists;
+    }
+
+    function renderTopPlayers() {
+      const byGoals = [...players].sort((a,b)=> (b.goals||0)-(a.goals||0)).slice(0,3);
+      const byAssists = [...players].sort((a,b)=> (b.assists||0)-(a.assists||0)).slice(0,3);
+      const topScorers = document.getElementById('topScorers');
+      const topAssists = document.getElementById('topAssists');
+      topScorers.innerHTML = '';
+      topAssists.innerHTML = '';
+
+      byGoals.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'flex items-center gap-2 clickable';
+        el.innerHTML = `<img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div class="text-sm"><div class="font-semibold">${p.name}</div><div class="text-xs muted">G: ${p.goals||0}</div></div>`;
+        el.addEventListener('click', ()=> openModal(p));
+        topScorers.appendChild(el);
+      });
+
+      byAssists.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'flex items-center gap-2 clickable';
+        el.innerHTML = `<img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div class="text-sm"><div class="font-semibold">${p.name}</div><div class="text-xs muted">A: ${p.assists||0}</div></div>`;
+        el.addEventListener('click', ()=> openModal(p));
+        topAssists.appendChild(el);
+      });
+    }
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = '';
+      players.forEach(p => p.total = (Number(p.goals)||0) + (Number(p.assists)||0));
+      const sorted = [...players].sort((a,b)=> (b.total||0)-(a.total||0));
+      const limit = showFullLeaderboard ? sorted.length : Math.max(8, Math.ceil(sorted.length/2));
+      sorted.slice(0, limit).forEach((p,i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5';
+        tr.innerHTML = `<td class="py-2">${i+1}</td>
+                        <td class="py-2 clickable"><div class="flex items-center gap-2"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div>${p.name}</div></div></td>
+                        <td class="py-2 text-right">${p.goals||0}</td>
+                        <td class="py-2 text-right">${p.assists||0}</td>
+                        <td class="py-2 text-right font-semibold">${p.total||0}</td>`;
+        tr.querySelectorAll('.clickable').forEach(el => el.addEventListener('click', ()=> openModal(p)));
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderWeeks() {
+      const container = document.getElementById('weeksContainer');
+      container.innerHTML = '';
+      const keys = Object.keys(weeks).sort((a,b)=>{
+        const na = Number(a.replace(/\D/g,''))||0;
+        const nb = Number(b.replace(/\D/g,''))||0;
+        return nb - na; // newest first
+      });
+      const toShow = showAllWeeks ? keys : keys.slice(0,2);
+      toShow.forEach(k => {
+        const w = weeks[k];
+        const total = (w.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<div class="flex items-start justify-between">
+                          <div>
+                            <div class="font-semibold">${k} <span class="text-xs muted"> ${w.date||''}</span></div>
+                            <div class="text-xs muted">Total contributions: ${total}</div>
+                          </div>
+                          <div class="text-xs muted">Highlights</div>
+                        </div>
+                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <div class="text-sm font-medium">Goalscorers</div>
+                            <div class="mt-2 space-y-2">${(w.players||[]).filter(p=>Number(p.goals||0)>0).sort((a,b)=>b.goals-a.goals).map(p=>`<div class="flex items-center gap-2 clickable" data-name="${p.name}"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div class="font-semibold">${p.name}</div><div class="text-xs muted">G: ${p.goals||0}</div></div></div>`).join('')}</div>
+                          </div>
+                          <div>
+                            <div class="text-sm font-medium">Assists</div>
+                            <div class="mt-2 space-y-2">${(w.players||[]).filter(p=>Number(p.assists||0)>0).sort((a,b)=>b.assists-a.assists).map(p=>`<div class="flex items-center gap-2 clickable" data-name="${p.name}"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div class="font-semibold">${p.name}</div><div class="text-xs muted">A: ${p.assists||0}</div></div></div>`).join('')}</div>
+                          </div>
+                        </div>
+                        ${w.videoUrl ? `<div class="mt-3"><div class="text-sm font-medium">Video highlights</div><div class="mt-2"><div style="position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div></div></div>` : ''}`;
+        container.appendChild(el);
+        el.querySelectorAll('.clickable').forEach(node => {
+          node.addEventListener('click', () => {
+            const name = node.getAttribute('data-name');
+            const p = players.find(x => x.name === name);
+            if (p) openModal(p);
+          });
+        });
+      });
+    }
+
+    function renderPlayersGrid() {
+      const grid = document.getElementById('playersGrid');
+      grid.innerHTML = '';
+      players.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card clickable';
+        card.innerHTML = `<div class="flex items-center gap-2"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div class="font-semibold">${p.name}</div><div class="text-xs muted">G:${p.goals||0} • A:${p.assists||0}</div></div></div>`;
+        card.addEventListener('click', ()=> openModal(p));
+        grid.appendChild(card);
+      });
+    }
+
+    // Modal
+    function openModal(p) {
+      document.getElementById('modalName').textContent = p.name;
+      document.getElementById('modalGoals').textContent = p.goals || 0;
+      document.getElementById('modalAssists').textContent = p.assists || 0;
+      document.getElementById('modalTotal').textContent = p.total || 0;
+      document.getElementById('modalPhoto').src = `photos/${encodeURIComponent(p.name)}.jpg`;
+      document.getElementById('playerModal').classList.remove('hidden');
+    }
+    document.getElementById('modalClose').addEventListener('click', ()=> document.getElementById('playerModal').classList.add('hidden'));
+
+    // Payments simulation: choose file and upload
+    document.getElementById('chooseFileBtn').addEventListener('click', ()=> document.getElementById('receiptFile').click());
+    document.getElementById('receiptFile').addEventListener('change', (e)=> {
+      const f = e.target.files[0];
+      document.getElementById('receiptStatus').textContent = f ? `Selected: ${f.name}` : '';
+    });
+
+    document.getElementById('uploadReceiptBtn').addEventListener('click', ()=> {
+      const name = document.getElementById('receiptPlayer').value.trim();
+      const amount = Number(document.getElementById('receiptAmount').value) || 0;
+      const fileInput = document.getElementById('receiptFile');
+      if (!name || amount <= 0 || !fileInput.files[0]) return alert('Enter player, amount and choose a file');
+      const entry = { name, amount, fileName: fileInput.files[0].name, timestamp: new Date().toISOString(), status: 'Pending Verification' };
+      payments.push(entry);
+      document.getElementById('receiptStatus').textContent = 'Receipt uploaded (pending verification)';
+      document.getElementById('receiptPlayer').value = '';
+      document.getElementById('receiptAmount').value = '';
+      fileInput.value = '';
+      renderPaymentsLog();
+      // TODO: POST receipt to backend for storage and verification; backend should update Payments table in Airtable
+    });
+
+    function renderPaymentsLog() {
+      const el = document.getElementById('paymentsLog');
+      if (!payments.length) { el.innerHTML = '<div class="text-xs muted">No receipts uploaded yet.</div>'; return; }
+      el.innerHTML = payments.map(p => `<div>${p.timestamp.split('T')[0]} — ${p.name} — £${p.amount} — <strong>${p.status}</strong></div>`).join('');
+    }
+
+    // Slot release
+    document.getElementById('releaseBtn').addEventListener('click', ()=> {
+      const name = document.getElementById('releasePlayer').value.trim();
+      if (!name) return alert('Enter player name to release');
+      const allowed = isBeforeWednesdayNoonUK();
+      if (!allowed) {
+        document.getElementById('releaseStatus').textContent = 'Release window closed (after Wednesday 12:00 UK).';
+        return;
+      }
+      const idx = players.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+      if (idx === -1) {
+        document.getElementById('releaseStatus').textContent = 'Player not found in first 32.';
+        return;
+      }
+      // Simulate release: remove from players list (in production: call backend to mark slot released)
+      players.splice(idx,1);
+      computeTotals(); renderAll();
+      document.getElementById('releaseStatus').textContent = `${name} released successfully.`;
+      document.getElementById('releasePlayer').value = '';
+    });
+
+    // Selected teams publish (admin)
+    document.getElementById('publishSelectedBtn').addEventListener('click', ()=> {
+      // In production: admin selects teams in Airtable/Softr and toggles "Selected Teams Published"
+      selectedTeamsPublished = !selectedTeamsPublished;
+      renderSelectedTeams();
+      // TODO: call backend to persist published teams and notify players
+    });
+
+    function renderSelectedTeams() {
+      const area = document.getElementById('selectedTeamsArea');
+      if (!selectedTeamsPublished) {
+        area.textContent = 'No teams published yet.';
+        return;
+      }
+      // For demo: show top 32 as selected and next as reserves
+      const sorted = [...players].sort((a,b)=> (b.total||0)-(a.total||0));
+      const selected = sorted.slice(0,32);
+      const reserves = sorted.slice(32, 32+10);
+      area.innerHTML = `<div class="text-sm"><strong>Selected (32)</strong>: ${selected.map(p=>p.name).join(', ')}</div><div class="text-sm mt-2"><strong>Reserves</strong>: ${reserves.map(p=>p.name).join(', ')}</div>`;
+    }
+
+    // Controls
+    document.getElementById('showAllLeaderboard').addEventListener('click', ()=> {
+      showFullLeaderboard = !showFullLeaderboard;
+      document.getElementById('showAllLeaderboard').textContent = showFullLeaderboard ? 'Show condensed' : 'Show full leaderboard';
+      renderLeaderboard();
+    });
+    document.getElementById('showMoreWeeks').addEventListener('click', ()=> {
+      showAllWeeks = !showAllWeeks;
+      document.getElementById('showMoreWeeks').textContent = showAllWeeks ? 'Show recent only' : 'Show more weeks';
+      renderWeeks();
+    });
+
+    // Theme toggle (simple)
+    document.getElementById('themeToggle').addEventListener('click', ()=> document.documentElement.classList.toggle('dark'));
+
+    // Start
+    loadData();
+  </script>
 </body>
 </html>
