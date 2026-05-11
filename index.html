@@ -50,8 +50,8 @@
       .player-photo { width:56px; height:56px; }
       .small-photo { width:40px; height:40px; }
     }
-    /* small utility */
     .muted-quiet { color: rgba(255,255,255,0.6); font-size:13px; }
+    a.link-accent { color: var(--accent); text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -246,21 +246,61 @@
   </div>
 
   <script>
-    // Persistence key
-    const SORT_KEY = 'tnf_leaderboard_sort';
+    // ---------- Embedded sample data (use until backend/Airtable is wired) ----------
+    // Latest match day data provided by you
+    const playersData = [
+      { name: "MUYI" },
+      { name: "Okky" },
+      { name: "Hassan" },
+      { name: "Hebro" },
+      { name: "Abeey" },
+      { name: "Oreke" },
+      { name: "Pappy" },
+      { name: "Cattano" },
+      { name: "Goke" }
+    ];
 
-    // Data holders (client-side simulation until backend is wired)
-    let players = [];
-    let weeks = {};
-    let payments = [];
+    // Weekly data: latest week with the goals/assists you gave
+    const weeksData = {
+      "WEEK-LATEST": {
+        date: new Date().toISOString().split('T')[0],
+        players: [
+          { name: "MUYI", goals: 1, assists: 0 },
+          { name: "Okky", goals: 1, assists: 0 },
+          { name: "Hassan", goals: 1, assists: 0 },
+          { name: "Hebro", goals: 1, assists: 1 }, // Hebro had 1 goal and 1 assist
+          { name: "Abeey", goals: 0, assists: 1 },
+          { name: "Oreke", goals: 1, assists: 0 },
+          { name: "Pappy", goals: 0, assists: 1 },
+          { name: "Cattano", goals: 1, assists: 0 },
+          { name: "Goke", goals: 1, assists: 0 }
+        ],
+        // Replace these sample URLs with your YouTube embed and full video links after upload
+        videoUrl: "https://www.youtube.com/embed/VIDEO_ID_HIGHLIGHTS", // embed URL for daily highlights reel
+        fullVideoUrl: "https://youtu.be/VIDEO_ID_FULL" // watch URL for full uncut match
+      },
+      // previous week example (keeps two-week view working)
+      "WEEK-PRIOR": {
+        date: "2026-05-01",
+        players: [
+          { name: "Hassan", goals: 2, assists: 1 },
+          { name: "Goke", goals: 1, assists: 0 }
+        ],
+        videoUrl: "" // no video for prior week in this sample
+      }
+    };
+
+    // ---------- Runtime state ----------
+    const SORT_KEY = 'tnf_leaderboard_sort';
+    let players = []; // aggregated players with totals
+    let weeks = {};   // weeks object
+    let payments = []; // local simulation
     let showFullLeaderboard = false;
     let showAllWeeks = false;
     let selectedTeamsPublished = false;
-
-    // Default sort: persisted or goals
     let currentSort = localStorage.getItem(SORT_KEY) || 'goals';
 
-    // UK time check for release window
+    // ---------- Utility: UK time check ----------
     function isBeforeWednesdayNoonUK() {
       const now = new Date();
       const london = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
@@ -272,25 +312,16 @@
       return london.getTime() < wednesday.getTime();
     }
 
-    // Load data files (data/players.json and data/weeks.json)
-    async function loadData() {
-      try {
-        const [pRes, wRes] = await Promise.all([fetch('data/players.json'), fetch('data/weeks.json')]);
-        if (!pRes.ok || !wRes.ok) {
-          console.warn('Missing data files; ensure data/players.json and data/weeks.json exist.');
-          return;
-        }
-        players = await pRes.json();
-        weeks = await wRes.json();
-        computeTotals();
-        renderAll();
-        updateSortButtons();
-      } catch (err) {
-        console.error('loadData error', err);
-      }
+    // ---------- Initialize from embedded data ----------
+    function initFromEmbedded() {
+      players = playersData.map(p => ({ name: p.name, goals: 0, assists: 0, total: 0 }));
+      weeks = weeksData;
+      computeTotals();
+      renderAll();
+      updateSortButtons();
     }
 
-    // Aggregate totals from weeks into players
+    // ---------- Compute totals from weeks ----------
     function computeTotals() {
       const lookup = {};
       players.forEach(p => {
@@ -313,7 +344,7 @@
       });
     }
 
-    // Render everything
+    // ---------- Render functions ----------
     function renderAll() {
       renderHeader();
       renderHero();
@@ -331,7 +362,7 @@
         const nb = Number(b.replace(/\D/g,''))||0;
         return na - nb;
       });
-      const latest = weekKeys.length ? weekKeys[weekKeys.length-1] : 'WEEK1';
+      const latest = weekKeys.length ? weekKeys[weekKeys.length-1] : 'WEEK-LATEST';
       const latestObj = weeks[latest] || {};
       const totalGoals = (latestObj.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
       document.getElementById('headerWeek').textContent = `${latest} • ${totalGoals} goals`;
@@ -349,7 +380,6 @@
       document.getElementById('heroTotal').textContent = totals.goals + totals.assists;
     }
 
-    // Top 3 scorers and top 3 assists
     function renderTopPlayers() {
       const byGoals = [...players].sort((a,b)=> (b.goals||0)-(a.goals||0)).slice(0,3);
       const byAssists = [...players].sort((a,b)=> (b.assists||0)-(a.assists||0)).slice(0,3);
@@ -385,7 +415,6 @@
       });
     }
 
-    // Update sort button visuals
     function updateSortButtons() {
       document.querySelectorAll('.sort-btn').forEach(btn => {
         const sort = btn.dataset.sort;
@@ -396,7 +425,6 @@
       subtitle.textContent = `Sorted by ${currentSort}`;
     }
 
-    // FLIP-enabled leaderboard render
     function renderLeaderboard() {
       const tbody = document.getElementById('leaderboardBody');
 
@@ -466,7 +494,6 @@
       updateSortButtons();
     }
 
-    // Weeks rendering (embeds highlight + link to full uncut video)
     function renderWeeks() {
       const container = document.getElementById('weeksContainer');
       container.innerHTML = '';
@@ -498,7 +525,7 @@
                             <div class="mt-2 space-y-2">${(w.players||[]).filter(p=>Number(p.assists||0)>0).sort((a,b)=>b.assists-a.assists).map(p=>`<div class="flex items-center gap-3 clickable" data-name="${p.name}"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div class="font-semibold">${p.name}</div><div class="text-xs muted">A: ${p.assists||0}</div></div></div>`).join('')}</div>
                           </div>
                         </div>
-                        ${w.videoUrl ? `<div class="mt-3"><div class="text-sm font-medium">Daily Highlights</div><div class="mt-2"><div style="position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;" allowfullscreen></iframe></div><div class="mt-2 text-xs muted-quiet">Watch the full uncut match: ${w.fullVideoUrl ? `<a href="${w.fullVideoUrl}" target="_blank" rel="noopener" class="text-accent" style="color:var(--accent)">Full uncut video</a>` : '<span class="muted-quiet">Not available</span>'}</div></div></div>` : ''}`;
+                        ${w.videoUrl ? `<div class="mt-3"><div class="text-sm font-medium">Daily Highlights</div><div class="mt-2"><div style="position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;" allowfullscreen></iframe></div><div class="mt-2 text-xs muted-quiet">Watch the full uncut match: ${w.fullVideoUrl ? `<a href="${w.fullVideoUrl}" target="_blank" rel="noopener" class="link-accent">Full uncut video</a>` : '<span class="muted-quiet">Not available</span>'}</div></div></div>` : ''}`;
         container.appendChild(el);
         el.querySelectorAll('.clickable').forEach(node => {
           node.addEventListener('click', () => {
@@ -625,7 +652,14 @@
     document.getElementById('themeToggle').addEventListener('click', ()=> document.documentElement.classList.toggle('dark'));
 
     // Start
-    loadData();
+    (function start() {
+      // seed from embedded data
+      Object.assign(weeks, weeksData);
+      players = playersData.map(p => ({ name: p.name, goals: 0, assists: 0, total: 0 }));
+      computeTotals();
+      renderAll();
+      updateSortButtons();
+    })();
   </script>
 </body>
 </html>
