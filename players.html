@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TNF — Players & Admin</title>
-<style>
-  :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882}
-  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-  .wrap{max-width:1100px;margin:24px auto;padding:18px}
-  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
-  .muted{color:var(--muted)}
-  .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
-  .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TNF — Players & Admin</title>
+  <style>
+    :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
+    .wrap{max-width:1100px;margin:24px auto;padding:18px}
+    .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
+    .muted{color:var(--muted)}
+    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -57,38 +57,111 @@
     </section>
   </div>
 
-<script>
-const playersData = [{name:"MUYI"},{name:"Okky"},{name:"Hassan"},{name:"Hebro"},{name:"Abeey"},{name:"Oreke"},{name:"Pappy"},{name:"Cattano"},{name:"Goke"}];
-const weeksData = {
-  "WEEK-LATEST": { date: new Date().toISOString().split('T')[0], players:[{name:"MUYI",goals:1,assists:0},{name:"Okky",goals:1,assists:0},{name:"Hassan",goals:1,assists:0},{name:"Hebro",goals:1,assists:1},{name:"Abeey",goals:0,assists:1},{name:"Oreke",goals:1,assists:0},{name:"Pappy",goals:0,assists:1},{name:"Cattano",goals:1,assists:0},{name:"Goke",goals:1,assists:0}], videoUrl:"", fullVideoUrl:"" }
-};
+  <!-- FALLBACK -->
+  <script>
+    window.__FALLBACK_PLAYERS = [
+      { name: "MUYI" }, { name: "Okky" }, { name: "Hassan" }
+    ];
+    window.__FALLBACK_WEEKS = {
+      "WEEK-LATEST": {
+        date: new Date().toISOString().split('T')[0],
+        players: [
+          { name: "MUYI", goals: 1, assists: 0 },
+          { name: "Okky", goals: 1, assists: 0 }
+        ],
+        videoUrl: "",
+        fullVideoUrl: ""
+      }
+    };
+  </script>
 
-let players = playersData.map(p=>({name:p.name,goals:0,assists:0,total:0}));
-function computeTotals(){ const lookup={}; players.forEach(p=>lookup[p.name.toLowerCase()]={name:p.name,goals:0,assists:0}); Object.values(weeksData).forEach(w=> (w.players||[]).forEach(r=>{ const k=(r.name||'').toLowerCase(); if(!lookup[k]) lookup[k]={name:r.name,goals:0,assists:0}; lookup[k].goals+=Number(r.goals||0); lookup[k].assists+=Number(r.assists||0); })); players = Object.keys(lookup).map(k=>{ const p=lookup[k]; return {name:p.name,goals:p.goals,assists:p.assists,total:p.goals+p.assists}; }); }
+  <script>
+    let players = [];
+    const weeks = {}; // not required here but loader will set if needed
+    let payments = [];
 
-function renderPlayersGrid(){ const grid=document.getElementById('playersGrid'); grid.innerHTML=''; players.forEach(p=>{ const d=document.createElement('div'); d.style.padding='10px'; d.style.borderRadius='8px'; d.style.background='rgba(0,0,0,0.06)'; d.style.cursor='pointer'; d.innerHTML=`<div style="display:flex;gap:10px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:13px">G:${p.goals||0} • A:${p.assists||0}</div></div></div>`; d.addEventListener('click',()=>alert(`${p.name}: G:${p.goals} A:${p.assists}`)); grid.appendChild(d); }); document.getElementById('playersCount').textContent = players.length; }
+    function renderPlayersGrid() {
+      const grid = document.getElementById('playersGrid'); if (!grid) return;
+      grid.innerHTML = '';
+      players.forEach(p => {
+        const d = document.createElement('div');
+        d.style.padding = '10px';
+        d.style.borderRadius = '8px';
+        d.style.background = 'rgba(0,0,0,0.06)';
+        d.style.cursor = 'pointer';
+        d.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:13px">G:${p.goals||0} • A:${p.assists||0}</div></div></div>`;
+        d.addEventListener('click', ()=> alert(`${p.name}: G:${p.goals} A:${p.assists}`));
+        grid.appendChild(d);
+      });
+      const pc = document.getElementById('playersCount'); if (pc) pc.textContent = players.length;
+    }
 
-document.getElementById('chooseFileBtn').addEventListener('click', ()=> document.getElementById('receiptFile').click());
-document.getElementById('receiptFile').addEventListener('change', (e)=> { const f=e.target.files[0]; document.getElementById('receiptStatus').textContent = f?`Selected: ${f.name}`:''; });
-document.getElementById('uploadReceiptBtn').addEventListener('click', ()=> {
-  const name=document.getElementById('receiptPlayer').value.trim(); const amount=Number(document.getElementById('receiptAmount').value)||0; const file=document.getElementById('receiptFile');
-  if(!name||amount<=0||!file.files[0]) return alert('Enter player, amount and choose a file');
-  const entry={name,amount,fileName:file.files[0].name,timestamp:new Date().toISOString(),status:'Pending'};
-  const log=document.getElementById('paymentsLog'); log.innerHTML = (log.innerHTML||'') + `<div>${entry.timestamp.split('T')[0]} — ${entry.name} — £${entry.amount} — <strong>${entry.status}</strong></div>`;
-  document.getElementById('receiptStatus').textContent='Receipt uploaded (pending verification)';
-  document.getElementById('receiptPlayer').value=''; document.getElementById('receiptAmount').value=''; file.value='';
-});
+    // payments simulation
+    document.addEventListener('click', function(e){
+      if (e.target && e.target.id === 'chooseFileBtn') document.getElementById('receiptFile').click();
+    });
+    document.getElementById('receiptFile') && document.getElementById('receiptFile').addEventListener('change', (e)=> {
+      const f = e.target.files[0]; document.getElementById('receiptStatus') && (document.getElementById('receiptStatus').textContent = f ? `Selected: ${f.name}` : '');
+    });
+    document.getElementById('uploadReceiptBtn') && document.getElementById('uploadReceiptBtn').addEventListener('click', ()=> {
+      const name = (document.getElementById('receiptPlayer') && document.getElementById('receiptPlayer').value.trim()) || '';
+      const amount = Number(document.getElementById('receiptAmount') && document.getElementById('receiptAmount').value) || 0;
+      const fileInput = document.getElementById('receiptFile');
+      if (!name || amount <= 0 || !fileInput || !fileInput.files[0]) return alert('Enter player, amount and choose a file');
+      const entry = { name, amount, fileName: fileInput.files[0].name, timestamp: new Date().toISOString(), status: 'Pending' };
+      payments.push(entry);
+      document.getElementById('receiptStatus') && (document.getElementById('receiptStatus').textContent = 'Receipt uploaded (pending verification)');
+      document.getElementById('receiptPlayer') && (document.getElementById('receiptPlayer').value = '');
+      document.getElementById('receiptAmount') && (document.getElementById('receiptAmount').value = '');
+      fileInput.value = '';
+      renderPaymentsLog();
+    });
+    function renderPaymentsLog() {
+      const el = document.getElementById('paymentsLog'); if (!el) return;
+      if (!payments.length) { el.innerHTML = '<div class="muted">No receipts uploaded yet.</div>'; return; }
+      el.innerHTML = payments.map(p => `<div>${p.timestamp.split('T')[0]} — ${p.name} — £${p.amount} — <strong>${p.status}</strong></div>`).join('');
+    }
 
-document.getElementById('releaseBtn').addEventListener('click', ()=> {
-  const name=document.getElementById('releasePlayer').value.trim(); if(!name) return alert('Enter player name to release');
-  const now=new Date(); const london=new Date(now.toLocaleString('en-GB',{timeZone:'Europe/London'})); const lwDay=london.getDay(); const wednesday=new Date(london); const diff=(3-lwDay+7)%7; wednesday.setDate(london.getDate()+diff); wednesday.setHours(12,0,0,0);
-  if(london.getTime()>=wednesday.getTime()){ document.getElementById('releaseStatus').textContent='Release window closed (after Wednesday 12:00 UK).'; return; }
-  const idx=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase()); if(idx===-1){ document.getElementById('releaseStatus').textContent='Player not found in first 32.'; return; }
-  players.splice(idx,1); computeTotals(); renderPlayersGrid(); document.getElementById('releaseStatus').textContent=`${name} released successfully.`; document.getElementById('releasePlayer').value='';
-});
+    // release logic
+    document.getElementById('releaseBtn') && document.getElementById('releaseBtn').addEventListener('click', ()=> {
+      const name = (document.getElementById('releasePlayer') && document.getElementById('releasePlayer').value.trim()) || '';
+      if (!name) return alert('Enter player name to release');
+      const now = new Date();
+      const london = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/London' }));
+      const lwDay = london.getDay();
+      const wednesday = new Date(london);
+      const diff = (3 - lwDay + 7) % 7;
+      wednesday.setDate(london.getDate() + diff);
+      wednesday.setHours(12,0,0,0);
+      if (london.getTime() >= wednesday.getTime()) { document.getElementById('releaseStatus') && (document.getElementById('releaseStatus').textContent = 'Release window closed (after Wednesday 12:00 UK).'); return; }
+      const idx = players.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+      if (idx === -1) { document.getElementById('releaseStatus') && (document.getElementById('releaseStatus').textContent = 'Player not found in first 32.'); return; }
+      players.splice(idx,1); renderPlayersGrid(); document.getElementById('releaseStatus') && (document.getElementById('releaseStatus').textContent = `${name} released successfully.`); document.getElementById('releasePlayer') && (document.getElementById('releasePlayer').value = '');
+    });
 
-(function boot(){ computeTotals(); renderPlayersGrid(); })();
-</script>
+    // Loader: fetch centralized data and populate players
+    async function loadDataFiles() {
+      const fallbackPlayers = window.__FALLBACK_PLAYERS || [];
+      const fallbackWeeks = window.__FALLBACK_WEEKS || {};
+      async function tryFetch(url) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.json();
+        } catch (err) {
+          console.warn('Could not fetch', url, err);
+          return null;
+        }
+      }
+      const [playersJson, weeksJson] = await Promise.all([tryFetch('data/players.json'), tryFetch('data/weeks.json')]);
+      const playersData = Array.isArray(playersJson) ? playersJson : fallbackPlayers;
+      // assign players array
+      players = playersData.map(p => ({ name: p.name, goals: Number(p.goals || 0), assists: Number(p.assists || 0), total: (Number(p.goals||0)+Number(p.assists||0)) }));
+      renderPlayersGrid();
+      renderPaymentsLog();
+    }
+
+    loadDataFiles();
+  </script>
 </body>
 </html>
-
