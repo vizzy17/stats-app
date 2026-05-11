@@ -1,91 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF League Dashboard — Robust</title>
-  <style>
-    :root{
-      --bg1:#37003C; --bg2:#0A1A2F; --muted:#A0A0A0; --card-bg:rgba(255,255,255,0.04);
-      --accent:#FF2882; --green:#00FF85; --neon:#00E6FF;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;}
-    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-    .wrap{max-width:1100px;margin:20px auto;padding:18px}
-    .card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
-    .muted{color:var(--muted)}
-    .flex{display:flex;align-items:center}
-    .gap-2{gap:10px}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#EDEDED;cursor:pointer}
-    .btn.active{background:rgba(255,40,130,0.12);border-color:rgba(255,40,130,0.28)}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;font-size:14px}
-    thead th{color:var(--muted);font-size:12px}
-    .player-photo{width:72px;height:72px;border-radius:10px;object-fit:cover;border:3px solid rgba(255,255,255,0.04)}
-    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:999}
-    .modal .box{background:#071226;padding:16px;border-radius:10px;width:100%;max-width:520px}
-    @media (max-width:720px){ .grid-3{grid-template-columns:1fr} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TNF — Dashboard</title>
+<style>
+  :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882;--green:#00FF85}
+  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
+  .wrap{max-width:1100px;margin:24px auto;padding:18px}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+  .muted{color:var(--muted)}
+  .flex{display:flex;align-items:center}
+  .gap-2{gap:10px}
+  .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
+  .btn.active{background:rgba(255,40,130,.12);border-color:rgba(255,40,130,.28)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;font-size:14px}
+  thead th{color:var(--muted);font-size:12px}
+  .player-photo{width:72px;height:72px;border-radius:10px;object-fit:cover;border:3px solid rgba(255,255,255,.04)}
+  .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
+  @media(max-width:720px){ .grid-3{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
   <div class="wrap">
     <header class="flex" style="justify-content:space-between;margin-bottom:12px">
       <div>
         <div style="font-weight:700;font-size:20px">TNF League Dashboard</div>
-        <div class="muted" id="headerSubtitle">Thursday night community league</div>
+        <div class="muted">Thursday night community league</div>
       </div>
-      <div class="flex gap-2">
-        <div class="muted" id="headerWeek">WEEK • 0 goals</div>
-        <button id="themeToggle" class="btn">Toggle theme</button>
-      </div>
+      <nav class="flex gap-2">
+        <a href="index.html" class="btn">Dashboard</a>
+        <a href="highlights.html" class="btn">Highlights</a>
+        <a href="players.html" class="btn">Players</a>
+      </nav>
     </header>
 
     <!-- Hero -->
-    <section class="card" id="heroCard">
+    <section class="card" id="hero">
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-        <div>
-          <div class="muted" style="font-size:12px">Total Goals</div>
-          <div id="heroGoals" style="font-size:28px;font-weight:800">0</div>
-          <div class="muted" style="font-size:12px">Across all weeks</div>
-        </div>
-        <div>
-          <div class="muted" style="font-size:12px">Total Assists</div>
-          <div id="heroAssists" style="font-size:28px;font-weight:800">0</div>
-          <div class="muted" style="font-size:12px">Across all weeks</div>
-        </div>
-        <div>
-          <div class="muted" style="font-size:12px">Total Contributions</div>
-          <div id="heroTotal" style="font-size:28px;font-weight:800">0</div>
-          <div class="muted" style="font-size:12px">Goals + Assists</div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-        <div style="flex:1" id="topScorersWrap">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Top 3 Scorers</div>
-            <div class="muted" style="font-size:12px">Current leaders</div>
-          </div>
-          <div id="topScorers" style="display:flex;gap:10px;margin-top:8px"></div>
-        </div>
-        <div style="flex:1" id="topAssistsWrap">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Top 3 Assist Leaders</div>
-            <div class="muted" style="font-size:12px">Creative players</div>
-          </div>
-          <div id="topAssists" style="display:flex;gap:10px;margin-top:8px"></div>
-        </div>
+        <div><div class="muted" style="font-size:12px">Total Goals</div><div id="heroGoals" style="font-size:28px;font-weight:800">0</div></div>
+        <div><div class="muted" style="font-size:12px">Total Assists</div><div id="heroAssists" style="font-size:28px;font-weight:800">0</div></div>
+        <div><div class="muted" style="font-size:12px">Total Contributions</div><div id="heroTotal" style="font-size:28px;font-weight:800">0</div></div>
       </div>
     </section>
 
     <!-- Leaderboard -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div>
-          <div style="font-weight:700">Leaderboard</div>
-          <div id="leaderboardSubtitle" class="muted" style="font-size:12px">Sorted by goals</div>
-        </div>
+        <div><strong>Leaderboard</strong><div id="leaderboardSubtitle" class="muted" style="font-size:12px">Sorted by goals</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn sort-btn" data-sort="goals">Goals</button>
           <button class="btn sort-btn" data-sort="total">Total</button>
@@ -93,340 +56,95 @@
           <button id="showAllLeaderboard" class="btn">Show full leaderboard</button>
         </div>
       </div>
-
       <div style="max-height:320px;overflow:auto">
-        <table>
-          <thead><tr><th>#</th><th>Player</th><th style="text-align:right">G</th><th style="text-align:right">A</th><th style="text-align:right">Total</th></tr></thead>
-          <tbody id="leaderboardBody"></tbody>
-        </table>
+        <table><thead><tr><th>#</th><th>Player</th><th style="text-align:right">G</th><th style="text-align:right">A</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody></table>
       </div>
     </section>
 
-    <!-- Weeks -->
-    <section id="weeksSection"></section>
-
-    <!-- Players grid -->
-    <section class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-weight:700">Players</div>
-        <div class="muted" style="font-size:13px">Total players: <span id="playersCount">0</span></div>
+    <!-- Top lists -->
+    <section class="card" style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1">
+        <div style="font-weight:700">Top 3 Scorers</div>
+        <div id="topScorers" style="display:flex;gap:10px;margin-top:8px"></div>
       </div>
-      <div id="playersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
-    </section>
-
-    <!-- Admin -->
-    <section class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><strong>Admin</strong><div class="muted" style="font-size:12px">Receipts, payments, slot release</div></div>
-        <div><button id="publishSelectedBtn" class="btn" style="background:var(--green);color:#001">Publish Selected Teams</button></div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
-          <div style="font-weight:600;margin-bottom:8px">Upload receipt</div>
-          <div style="display:flex;gap:8px">
-            <input id="receiptPlayer" placeholder="Player name" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <input id="receiptAmount" placeholder="£" style="width:80px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <input id="receiptFile" type="file" accept="image/*" style="display:none">
-            <button id="chooseFileBtn" class="btn">Choose</button>
-            <button id="uploadReceiptBtn" class="btn" style="background:var(--accent);color:#001">Upload</button>
-          </div>
-          <div id="receiptStatus" class="muted" style="margin-top:8px;font-size:13px"></div>
-          <div id="paymentsLog" class="muted" style="margin-top:8px;font-size:13px;max-height:120px;overflow:auto"></div>
-        </div>
-
-        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
-          <div style="font-weight:600;margin-bottom:8px">Slot release</div>
-          <div class="muted" style="font-size:13px;margin-bottom:8px">First 32 can release slot until <strong>Wednesday 12:00 UK</strong>.</div>
-          <div style="display:flex;gap:8px">
-            <input id="releasePlayer" placeholder="Player name to release" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <button id="releaseBtn" class="btn" style="background:#FFD166;color:#001">Release</button>
-          </div>
-          <div id="releaseStatus" class="muted" style="margin-top:8px;font-size:13px"></div>
-        </div>
+      <div style="flex:1">
+        <div style="font-weight:700">Top 3 Assist Leaders</div>
+        <div id="topAssists" style="display:flex;gap:10px;margin-top:8px"></div>
       </div>
     </section>
-
-    <!-- Modal -->
-    <div id="playerModal" class="modal" role="dialog" aria-hidden="true">
-      <div class="box">
-        <div style="display:flex;gap:12px">
-          <img id="modalPhoto" src="" alt="" style="width:72px;height:72px;border-radius:8px;object-fit:cover">
-          <div style="flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div><div id="modalName" style="font-weight:700"></div><div id="modalMeta" class="muted" style="font-size:13px"></div></div>
-              <button id="modalClose" class="btn">Close</button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center">
-              <div><div class="muted" style="font-size:12px">Goals</div><div id="modalGoals" style="font-weight:700;font-size:18px">0</div></div>
-              <div><div class="muted" style="font-size:12px">Assists</div><div id="modalAssists" style="font-weight:700;font-size:18px">0</div></div>
-              <div><div class="muted" style="font-size:12px">Total</div><div id="modalTotal" style="font-weight:700;font-size:18px">0</div></div>
-            </div>
-            <div id="modalExtra" class="muted" style="margin-top:10px;font-size:13px"></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </div>
 
-  <script>
-  (function(){
-    // Defensive helper to safely query DOM
-    const $ = sel => document.querySelector(sel);
-    const $all = sel => Array.from(document.querySelectorAll(sel));
+<script>
+/* Embedded sample data (update weeksData in all pages until backend exists) */
+const playersData = [{name:"MUYI"},{name:"Okky"},{name:"Hassan"},{name:"Hebro"},{name:"Abeey"},{name:"Oreke"},{name:"Pappy"},{name:"Cattano"},{name:"Goke"}];
+const weeksData = {
+  "WEEK-LATEST": { date: new Date().toISOString().split('T')[0],
+    players:[
+      {name:"MUYI",goals:1,assists:0},{name:"Okky",goals:1,assists:0},{name:"Hassan",goals:1,assists:0},
+      {name:"Hebro",goals:1,assists:1},{name:"Abeey",goals:0,assists:1},{name:"Oreke",goals:1,assists:0},
+      {name:"Pappy",goals:0,assists:1},{name:"Cattano",goals:1,assists:0},{name:"Goke",goals:1,assists:0}
+    ],
+    videoUrl:"", fullVideoUrl:""
+  },
+  "WEEK-PRIOR": { date:"2026-05-01", players:[{name:"Hassan",goals:2,assists:1},{name:"Goke",goals:1,assists:0}], videoUrl:"" }
+};
 
-    // Embedded fallback data (your latest match)
-    const fallbackPlayers = [
-      { name: "MUYI" },{ name: "Okky" },{ name: "Hassan" },{ name: "Hebro" },
-      { name: "Abeey" },{ name: "Oreke" },{ name: "Pappy" },{ name: "Cattano" },{ name: "Goke" }
-    ];
-    const fallbackWeeks = {
-      "WEEK-LATEST": {
-        date: new Date().toISOString().split('T')[0],
-        players: [
-          { name: "MUYI", goals:1, assists:0 },
-          { name: "Okky", goals:1, assists:0 },
-          { name: "Hassan", goals:1, assists:0 },
-          { name: "Hebro", goals:1, assists:1 },
-          { name: "Abeey", goals:0, assists:1 },
-          { name: "Oreke", goals:1, assists:0 },
-          { name: "Pappy", goals:0, assists:1 },
-          { name: "Cattano", goals:1, assists:0 },
-          { name: "Goke", goals:1, assists:0 }
-        ],
-        videoUrl: "", fullVideoUrl: ""
-      },
-      "WEEK-PRIOR": {
-        date: "2026-05-01",
-        players: [{ name:"Hassan", goals:2, assists:1 },{ name:"Goke", goals:1, assists:0 }],
-        videoUrl: "", fullVideoUrl: ""
-      }
-    };
+/* State */
+const SORT_KEY='tnf_sort';
+let currentSort = localStorage.getItem(SORT_KEY) || 'goals';
+let players = [];
+let weeks = {};
+let showFullLeaderboard = false;
 
-    // State
-    const SORT_KEY = 'tnf_leaderboard_sort';
-    let currentSort = localStorage.getItem(SORT_KEY) || 'goals';
-    let players = []; // aggregated
-    let weeks = {};
-    let payments = [];
-    let showFullLeaderboard = false;
-    let showAllWeeks = false;
-    let selectedTeamsPublished = false;
+/* Compute totals */
+function computeTotals(){
+  const lookup = {};
+  players.forEach(p=> lookup[p.name.toLowerCase()] = {name:p.name,goals:0,assists:0});
+  Object.values(weeks).forEach(w=> (w.players||[]).forEach(r=>{
+    const key=(r.name||'').toLowerCase(); if(!key) return;
+    if(!lookup[key]) lookup[key]={name:r.name,goals:0,assists:0};
+    lookup[key].goals += Number(r.goals||0); lookup[key].assists += Number(r.assists||0);
+  }));
+  players = Object.keys(lookup).map(k=>{ const p=lookup[k]; return {name:p.name,goals:p.goals,assists:p.assists,total:p.goals+p.assists}; });
+}
 
-    // Safe fetch with fallback
-    async function safeLoadJSON(url) {
-      try {
-        const res = await fetch(url, {cache: "no-store"});
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return await res.json();
-      } catch (err) {
-        console.warn('safeLoadJSON failed for', url, err);
-        return null;
-      }
-    }
+/* Render functions */
+function renderHero(){
+  const totals = Object.values(weeks).reduce((acc,w)=>{ (w.players||[]).forEach(p=>{acc.goals+=Number(p.goals||0);acc.assists+=Number(p.assists||0)}); return acc; },{goals:0,assists:0});
+  document.getElementById('heroGoals').textContent = totals.goals;
+  document.getElementById('heroAssists').textContent = totals.assists;
+  document.getElementById('heroTotal').textContent = totals.goals + totals.assists;
+}
 
-    // Initialize: try to load data files, otherwise use fallback
-    async function initData() {
-      const [p, w] = await Promise.all([safeLoadJSON('data/players.json'), safeLoadJSON('data/weeks.json')]);
-      const playersSource = p && Array.isArray(p) ? p : fallbackPlayers;
-      const weeksSource = w && typeof w === 'object' ? w : fallbackWeeks;
-      // seed players array (names only)
-      players = playersSource.map(x => ({ name: x.name || x, goals:0, assists:0, total:0 }));
-      weeks = weeksSource;
-      computeTotals();
-    }
+function renderTopPlayers(){
+  const byGoals=[...players].sort((a,b)=> (b.goals||0)-(a.goals||0)).slice(0,3);
+  const byAssists=[...players].sort((a,b)=> (b.assists||0)-(a.assists||0)).slice(0,3);
+  const s=document.getElementById('topScorers'), a=document.getElementById('topAssists'); s.innerHTML=''; a.innerHTML='';
+  byGoals.forEach((p,i)=>{ const d=document.createElement('div'); d.style.cursor='pointer'; d.innerHTML=`<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div style="margin-left:6px"><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">G: ${p.goals||0}</div></div>`; d.addEventListener('click',()=>alert(p.name)); s.appendChild(d); });
+  byAssists.forEach((p,i)=>{ const d=document.createElement('div'); d.style.cursor='pointer'; d.innerHTML=`<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div style="margin-left:6px"><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">A: ${p.assists||0}</div></div>`; d.addEventListener('click',()=>alert(p.name)); a.appendChild(d); });
+}
 
-    // Compute totals from weeks
-    function computeTotals() {
-      const lookup = {};
-      players.forEach(p => { lookup[p.name.trim().toLowerCase()] = { name: p.name, goals:0, assists:0 }; });
-      Object.values(weeks).forEach(w => {
-        (w.players||[]).forEach(r => {
-          const name = (r.name||'').trim();
-          if (!name) return;
-          const key = name.toLowerCase();
-          if (!lookup[key]) lookup[key] = { name, goals:0, assists:0 };
-          lookup[key].goals += Number(r.goals||0);
-          lookup[key].assists += Number(r.assists||0);
-        });
-      });
-      players = Object.keys(lookup).map(k => {
-        const p = lookup[k];
-        return { name: p.name, goals: p.goals, assists: p.assists, total: p.goals + p.assists };
-      });
-    }
+function updateSortButtons(){ document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active', b.dataset.sort===currentSort)); document.getElementById('leaderboardSubtitle').textContent = `Sorted by ${currentSort}`; }
 
-    // Render helpers (defensive)
-    function renderHeader() {
-      try {
-        const keys = Object.keys(weeks).sort((a,b)=> {
-          const na = Number(a.replace(/\D/g,''))||0, nb = Number(b.replace(/\D/g,''))||0; return na - nb;
-        });
-        const latest = keys.length ? keys[keys.length-1] : 'WEEK-LATEST';
-        const latestObj = weeks[latest] || {};
-        const totalGoals = (latestObj.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
-        const el = $('#headerWeek'); if (el) el.textContent = `${latest} • ${totalGoals} goals`;
-        const next = $('#playersCount'); if (next) next.textContent = players.length;
-        const nm = document.getElementById('nextMatch'); if (nm) nm.textContent = latestObj.date || '—';
-      } catch (err) { console.error('renderHeader error', err); }
-    }
+function renderLeaderboard(){
+  const tbody=document.getElementById('leaderboardBody'); tbody.innerHTML='';
+  players.forEach(p=>p.total=(Number(p.goals)||0)+(Number(p.assists)||0));
+  let sorted=[...players].sort((a,b)=> (b[currentSort]||0)-(a[currentSort]||0));
+  if(currentSort==='total') sorted = sorted.sort((a,b)=>{ const d=(b.total||0)-(a.total||0); return d!==0?d:((b.goals||0)-(a.goals||0)); });
+  const limit = showFullLeaderboard ? sorted.length : Math.max(8, Math.ceil(sorted.length/2));
+  sorted.slice(0,limit).forEach((p,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td style="display:flex;align-items:center;gap:8px"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div>${p.name}</div></td><td style="text-align:right">${p.goals||0}</td><td style="text-align:right">${p.assists||0}</td><td style="text-align:right;font-weight:700">${p.total||0}</td>`; tbody.appendChild(tr); });
+  updateSortButtons();
+}
 
-    function renderHero() {
-      try {
-        const totals = Object.values(weeks).reduce((acc,w)=>{ (w.players||[]).forEach(p=>{ acc.goals+=Number(p.goals||0); acc.assists+=Number(p.assists||0); }); return acc; }, {goals:0, assists:0});
-        $('#heroGoals') && ($('#heroGoals').textContent = totals.goals);
-        $('#heroAssists') && ($('#heroAssists').textContent = totals.assists);
-        $('#heroTotal') && ($('#heroTotal').textContent = totals.goals + totals.assists);
-      } catch (err) { console.error('renderHero error', err); }
-    }
-
-    function renderTopPlayers() {
-      try {
-        const byGoals = [...players].sort((a,b)=> (b.goals||0)-(a.goals||0)).slice(0,3);
-        const byAssists = [...players].sort((a,b)=> (b.assists||0)-(a.assists||0)).slice(0,3);
-        const topScorers = $('#topScorers'); const topAssists = $('#topAssists');
-        if (topScorers) { topScorers.innerHTML=''; byGoals.forEach((p,i)=>{ const d=document.createElement('div'); d.className='flex'; d.style.alignItems='center'; d.style.gap='8px'; d.innerHTML=`<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">G: ${p.goals||0}</div></div>`; d.addEventListener('click',()=>openModal(p)); topScorers.appendChild(d); }); }
-        if (topAssists) { topAssists.innerHTML=''; byAssists.forEach((p,i)=>{ const d=document.createElement('div'); d.className='flex'; d.style.alignItems='center'; d.style.gap='8px'; d.innerHTML=`<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">A: ${p.assists||0}</div></div>`; d.addEventListener('click',()=>openModal(p)); topAssists.appendChild(d); }); }
-      } catch (err) { console.error('renderTopPlayers error', err); }
-    }
-
-    function updateSortButtons() {
-      $all('.sort-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.sort === currentSort); });
-      const sub = $('#leaderboardSubtitle'); if (sub) sub.textContent = `Sorted by ${currentSort}`;
-    }
-
-    function renderLeaderboard() {
-      try {
-        const tbody = $('#leaderboardBody'); if (!tbody) return;
-        players.forEach(p => p.total = (Number(p.goals)||0) + (Number(p.assists)||0));
-        let sorted = [...players].sort((a,b)=> (b[currentSort]||0) - (a[currentSort]||0));
-        if (currentSort === 'total') sorted = sorted.sort((a,b)=> { const d=(b.total||0)-(a.total||0); return d!==0?d:((b.goals||0)-(a.goals||0)); });
-
-        // FLIP: record old positions
-        const oldRects = Array.from(tbody.children).reduce((m,row)=>{ if (row.dataset && row.dataset.name) m[row.dataset.name]=row.getBoundingClientRect(); return m; },{});
-
-        const frag = document.createDocumentFragment();
-        const limit = showFullLeaderboard ? sorted.length : Math.max(8, Math.ceil(sorted.length/2));
-        sorted.slice(0,limit).forEach((p,i)=> {
-          const tr = document.createElement('tr'); tr.dataset.name = p.name; tr.className='leaderboard-row';
-          tr.innerHTML = `<td>${i+1}</td><td style="display:flex;align-items:center;gap:8px"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div>${p.name}</div></td><td style="text-align:right">${p.goals||0}</td><td style="text-align:right">${p.assists||0}</td><td style="text-align:right;font-weight:700">${p.total||0}</td>`;
-          tr.querySelector('td')?.addEventListener?.('click',()=>openModal(p));
-          frag.appendChild(tr);
-        });
-        tbody.innerHTML=''; tbody.appendChild(frag);
-
-        // animate
-        const newRects = Array.from(tbody.children).reduce((m,row)=>{ m[row.dataset.name]=row.getBoundingClientRect(); return m; },{});
-        Object.keys(newRects).forEach(name=>{
-          const row = tbody.querySelector(`tr[data-name="${CSS.escape(name)}"]`);
-          const oldRect = oldRects[name]; const newRect = newRects[name];
-          if (oldRect && row) {
-            const dy = oldRect.top - newRect.top;
-            if (dy) {
-              row.style.transform = `translateY(${dy}px)`; row.style.opacity='0.98';
-              requestAnimationFrame(()=>{ row.style.transition='transform 260ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease'; row.style.transform=''; row.style.opacity=''; row.addEventListener('transitionend', function te(){ row.style.transition=''; row.removeEventListener('transitionend', te); }); });
-            }
-          } else if (row) { row.style.opacity='0'; requestAnimationFrame(()=> row.style.opacity=''); }
-        });
-
-        updateSortButtons();
-      } catch (err) { console.error('renderLeaderboard error', err); }
-    }
-
-    function renderWeeks() {
-      try {
-        const container = $('#weeksSection'); if (!container) return;
-        container.innerHTML = '';
-        const keys = Object.keys(weeks).sort((a,b)=>{ const na=Number(a.replace(/\D/g,''))||0, nb=Number(b.replace(/\D/g,''))||0; return nb-na; });
-        const toShow = showAllWeeks ? keys : keys.slice(0,2);
-        toShow.forEach(k=>{
-          const w = weeks[k]; const total = (w.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
-          const card = document.createElement('div'); card.className='card';
-          const goalsHtml = (w.players||[]).filter(p=>Number(p.goals||0)>0).sort((a,b)=>b.goals-a.goals).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted" style="font-size:12px">G: ${p.goals||0}</div></div></div>`).join('');
-          const assistsHtml = (w.players||[]).filter(p=>Number(p.assists||0)>0).sort((a,b)=>b.assists-a.assists).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted" style="font-size:12px">A: ${p.assists||0}</div></div></div>`).join('');
-          card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${k}</strong> <div class="muted" style="font-size:12px">${w.date||''}</div><div class="muted" style="font-size:12px;margin-top:6px">Total contributions: <span style="display:inline-block;background:linear-gradient(90deg,var(--green),var(--neon));color:#001;padding:6px 10px;border-radius:999px;font-weight:700">${total}</span></div></div><div class="muted" style="font-size:12px">Highlights</div></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div><div style="font-weight:600">Goalscorers</div><div style="margin-top:8px">${goalsHtml||'<div class="muted">No goals</div>'}</div></div><div><div style="font-weight:600">Assists</div><div style="margin-top:8px">${assistsHtml||'<div class="muted">No assists</div>'}</div></div></div>
-            ${w.videoUrl?`<div style="margin-top:12px"><div style="font-weight:600">Daily Highlights</div><div style="margin-top:8px;position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;border:0;border-radius:8px" allowfullscreen></iframe></div><div style="margin-top:8px" class="muted">Full match: ${w.fullVideoUrl?`<a href="${w.fullVideoUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${w.fullVideoUrl}</a>`:'Not available'}</div></div>`:''}`;
-          container.appendChild(card);
-        });
-      } catch (err) { console.error('renderWeeks error', err); }
-    }
-
-    function renderPlayersGrid() {
-      try {
-        const grid = $('#playersGrid'); if (!grid) return; grid.innerHTML='';
-        players.forEach(p=>{ const div=document.createElement('div'); div.style.padding='10px'; div.style.borderRadius='8px'; div.style.background='rgba(0,0,0,0.06)'; div.style.cursor='pointer'; div.innerHTML=`<div style="display:flex;gap:10px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:13px">G:${p.goals||0} • A:${p.assists||0}</div></div></div>`; div.addEventListener('click',()=>openModal(p)); grid.appendChild(div); });
-      } catch (err) { console.error('renderPlayersGrid error', err); }
-    }
-
-    function openModal(p) {
-      try {
-        $('#modalName') && ($('#modalName').textContent = p.name);
-        $('#modalGoals') && ($('#modalGoals').textContent = p.goals || 0);
-        $('#modalAssists') && ($('#modalAssists').textContent = p.assists || 0);
-        $('#modalTotal') && ($('#modalTotal').textContent = p.total || 0);
-        const mp = $('#modalPhoto'); if (mp) mp.src = `photos/${encodeURIComponent(p.name)}.jpg`;
-        const modal = document.getElementById('playerModal'); if (modal) modal.style.display = 'flex';
-      } catch (err) { console.error('openModal error', err); }
-    }
-
-    // close modal
-    $('#modalClose') && $('#modalClose').addEventListener('click', ()=> { const m=document.getElementById('playerModal'); if (m) m.style.display='none'; });
-
-    // payments simulation
-    $('#chooseFileBtn') && $('#chooseFileBtn').addEventListener('click', ()=> $('#receiptFile') && $('#receiptFile').click());
-    $('#receiptFile') && $('#receiptFile').addEventListener('change', (e)=> { const f=e.target.files[0]; $('#receiptStatus') && ($('#receiptStatus').textContent = f?`Selected: ${f.name}`:''); });
-    $('#uploadReceiptBtn') && $('#uploadReceiptBtn').addEventListener('click', ()=> {
-      const name = ($('#receiptPlayer') && $('#receiptPlayer').value.trim()) || '';
-      const amount = Number($('#receiptAmount') && $('#receiptAmount').value) || 0;
-      const fileInput = $('#receiptFile');
-      if (!name || amount<=0 || !fileInput || !fileInput.files[0]) return alert('Enter player, amount and choose a file');
-      payments.push({ name, amount, fileName: fileInput.files[0].name, timestamp: new Date().toISOString(), status:'Pending' });
-      $('#receiptStatus') && ($('#receiptStatus').textContent = 'Receipt uploaded (pending verification)');
-      $('#receiptPlayer') && ($('#receiptPlayer').value=''); $('#receiptAmount') && ($('#receiptAmount').value=''); fileInput.value='';
-      renderPaymentsLog();
-    });
-    function renderPaymentsLog(){ const el = $('#paymentsLog'); if (!el) return; if (!payments.length) { el.innerHTML = '<div class="muted">No receipts uploaded yet.</div>'; return; } el.innerHTML = payments.map(p=>`<div>${p.timestamp.split('T')[0]} — ${p.name} — £${p.amount} — <strong>${p.status}</strong></div>`).join(''); }
-
-    // release
-    $('#releaseBtn') && $('#releaseBtn').addEventListener('click', ()=> {
-      const name = ($('#releasePlayer') && $('#releasePlayer').value.trim()) || '';
-      if (!name) return alert('Enter player name to release');
-      if (!isBeforeWednesdayNoonUK()) { $('#releaseStatus') && ($('#releaseStatus').textContent = 'Release window closed (after Wednesday 12:00 UK).'); return; }
-      const idx = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-      if (idx===-1) { $('#releaseStatus') && ($('#releaseStatus').textContent = 'Player not found in first 32.'); return; }
-      players.splice(idx,1); computeTotals(); renderAll(); $('#releaseStatus') && ($('#releaseStatus').textContent = `${name} released successfully.`); $('#releasePlayer') && ($('#releasePlayer').value='');
-    });
-
-    // publish selected (demo)
-    $('#publishSelectedBtn') && $('#publishSelectedBtn').addEventListener('click', ()=> { selectedTeamsPublished = !selectedTeamsPublished; renderSelectedTeamsPreview(); });
-    function renderSelectedTeamsPreview(){ const area = document.getElementById('selectedTeamsPreview'); if (!area) return; if (!selectedTeamsPublished) { area.textContent='No teams published'; return; } const sorted=[...players].sort((a,b)=> (b.total||0)-(a.total||0)); const selected = sorted.slice(0,32); const reserves = sorted.slice(32,42); area.innerHTML = `<div style="font-size:13px"><strong>Selected (32)</strong>: ${selected.map(p=>p.name).join(', ')}</div><div style="font-size:13px;margin-top:6px"><strong>Reserves</strong>: ${reserves.map(p=>p.name).join(', ')}</div>`; }
-
-    // sort controls
-    $all('.sort-btn').forEach(btn => btn.addEventListener('click', ()=> { currentSort = btn.dataset.sort || 'goals'; localStorage.setItem(SORT_KEY, currentSort); renderLeaderboard(); }));
-    $('#showAllLeaderboard') && $('#showAllLeaderboard').addEventListener('click', ()=> { showFullLeaderboard = !showFullLeaderboard; $('#showAllLeaderboard').textContent = showFullLeaderboard ? 'Show condensed' : 'Show full leaderboard'; renderLeaderboard(); });
-    $('#showMoreWeeks') && $('#showMoreWeeks').addEventListener('click', ()=> { showAllWeeks = !showAllWeeks; $('#showMoreWeeks').textContent = showAllWeeks ? 'Show recent only' : 'Show more weeks'; renderWeeks(); });
-    $('#themeToggle') && $('#themeToggle').addEventListener('click', ()=> document.documentElement.classList.toggle('dark'));
-
-    // render all
-    function renderAll(){ renderHeader(); renderHero(); renderTopPlayers(); renderLeaderboard(); renderWeeks(); renderPlayersGrid(); renderPaymentsLog(); renderSelectedTeamsPreview(); }
-
-    // boot
-    (async function boot(){
-      try {
-        await initData();
-        renderAll();
-        updateSortButtons();
-        console.info('Dashboard loaded (robust mode). If you see missing data, add data/players.json and data/weeks.json or replace fallback data.');
-      } catch (err) {
-        console.error('Boot error', err);
-      }
-    })();
-
-    // expose for debugging
-    window.__TNF = { players, weeks, computeTotals, renderAll };
-  })();
-  </script>
+/* Boot */
+(function start(){
+  weeks = weeksData; players = playersData.map(p=>({name:p.name,goals:0,assists:0,total:0}));
+  computeTotals(); renderHero(); renderTopPlayers(); renderLeaderboard();
+  document.querySelectorAll('.sort-btn').forEach(b=>b.addEventListener('click',()=>{ currentSort=b.dataset.sort; localStorage.setItem(SORT_KEY,currentSort); renderLeaderboard(); }));
+  document.getElementById('showAllLeaderboard').addEventListener('click',()=>{ showFullLeaderboard=!showFullLeaderboard; document.getElementById('showAllLeaderboard').textContent = showFullLeaderboard ? 'Show condensed' : 'Show full leaderboard'; renderLeaderboard(); });
+})();
+</script>
 </body>
 </html>
