@@ -3,56 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF — Highlights</title>
-  <style>
-    :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-    .wrap{max-width:1100px;margin:24px auto;padding:18px}
-    .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
-    .muted{color:var(--muted)}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
-    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
-  </style>
+  <title>TNF Stats – Highlights</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <div class="wrap">
-    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div><div style="font-weight:700">TNF — Highlights</div><div class="muted">Daily highlights and full match links</div></div>
-      <nav style="display:flex;gap:8px"><a href="index.html" class="btn">Dashboard</a><a href="highlights.html" class="btn">Highlights</a><a href="players.html" class="btn">Players</a></nav>
-    </header>
+  <header>
+    <h1>Highlights</h1>
+  </header>
 
-    <section id="weeksContainer"></section>
-  </div>
+  <main>
+    <div id="highlights-list"></div>
+  </main>
 
-  <!-- FALLBACK -->
-  <script>
-    window.__FALLBACK_WEEKS = {
-      "WEEK-LATEST": {
-        date: new Date().toISOString().split('T')[0],
-        players: [
-          { name: "MUYI", goals: 1, assists: 0 },
-          { name: "Okky", goals: 1, assists: 0 }
-        ],
-        videoUrl: "",
-        fullVideoUrl: ""
-      }
-    };
-  </script>
+  <footer>
+    <small>© TNF Stats</small>
+  </footer>
 
   <script>
-    function createWeekCard(k, w) {
-      const total = (w.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
-      const card = document.createElement('div'); card.className = 'card';
-      const goalsHtml = (w.players||[]).filter(p=>Number(p.goals||0)>0).sort((a,b)=>b.goals-a.goals).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted">G: ${p.goals}</div></div></div>`).join('');
-      const assistsHtml = (w.players||[]).filter(p=>Number(p.assists||0)>0).sort((a,b)=>b.assists-a.assists).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted">A: ${p.assists}</div></div></div>`).join('');
-      card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${k}</strong><div class="muted">${w.date||''}</div><div class="muted" style="margin-top:6px">Total contributions: <strong>${total}</strong></div></div><div class="muted">Highlights</div></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div><div style="font-weight:600">Goalscorers</div><div style="margin-top:8px">${goalsHtml||'<div class="muted">No goals</div>'}</div></div><div><div style="font-weight:600">Assists</div><div style="margin-top:8px">${assistsHtml||'<div class="muted">No assists</div>'}</div></div></div>
-        ${w.videoUrl?`<div style="margin-top:12px"><div style="font-weight:600">Daily Highlights</div><div style="margin-top:8px;position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;border:0;border-radius:8px" allowfullscreen></iframe></div><div style="margin-top:8px" class="muted">Full match: ${w.fullVideoUrl?`<a href="${w.fullVideoUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${w.fullVideoUrl}</a>`:'Not available'}</div></div>`:''}`;
-      return card;
-    }
+    window.__FALLBACK_WEEKS = {};
 
     async function loadDataFiles() {
-      const fallbackWeeks = window.__FALLBACK_WEEKS || {};
       async function tryFetch(url) {
         try {
           const res = await fetch(url, { cache: 'no-store' });
@@ -63,13 +34,40 @@
           return null;
         }
       }
+
       const weeksJson = await tryFetch('data/weeks.json');
-      const weeksData = (weeksJson && typeof weeksJson === 'object') ? weeksJson : fallbackWeeks;
-      const container = document.getElementById('weeksContainer'); container.innerHTML = '';
-      const keys = Object.keys(weeksData).sort((a,b)=> Number(b.replace(/\D/g,'')) - Number(a.replace(/\D/g,'')));
-      keys.forEach(k => container.appendChild(createWeekCard(k, weeksData[k])));
+      const weeksData = weeksJson || window.__FALLBACK_WEEKS;
+
+      const mergedWeeks = {};
+      for (const [wk, obj] of Object.entries(weeksData)) {
+        const merged = {};
+        (obj.players || []).forEach(r => {
+          const name = r.name.trim().toUpperCase();
+          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
+          merged[name].goals += Number(r.goals || 0);
+          merged[name].assists += Number(r.assists || 0);
+        });
+        mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
+      }
+
+      weeks = mergedWeeks;
+      renderHighlights();
     }
 
+    function renderHighlights() {
+      const container = document.getElementById('highlights-list');
+      container.innerHTML = Object.entries(weeks)
+        .map(([wk, data]) => `
+          <div class="week-card">
+            <h3>${wk} — ${data.date}</h3>
+            ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Watch Highlights</a><br>` : ""}
+            ${data.fullVideoUrl ? `<a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ""}
+          </div>
+        `)
+        .join('');
+    }
+
+    let weeks = {};
     loadDataFiles();
   </script>
 </body>
