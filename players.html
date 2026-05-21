@@ -3,94 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF Stats – Players</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>TNF Stats — Players</title>
+  <style>
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:#071026;color:#eaf2ff;padding:28px}
+    .panel{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{margin:0;font-size:20px}
+    #players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .player-card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .player-card strong{display:block;font-size:15px;margin-bottom:6px}
+    .meta{color:#9aa4b2;font-size:13px}
+    #filter{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;margin-bottom:12px;width:100%}
+    footer{margin-top:20px;color:#9aa4b2;text-align:center}
+    @media(max-width:700px){#players-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+  </style>
 </head>
-
 <body>
-  <header>
-    <h1>Players</h1>
-  </header>
+  <div class="panel">
+    <header>
+      <h1>Players</h1>
+      <input id="filter" placeholder="Filter players by name" />
+    </header>
 
-  <main>
-    <div id="players-grid"></div>
-  </main>
+    <div id="players-grid" aria-live="polite"></div>
 
-  <footer>
-    <small>© TNF Stats</small>
-  </footer>
+    <footer>© TNF Stats</footer>
+  </div>
 
   <script>
-    window.__FALLBACK_PLAYERS = [];
-    window.__FALLBACK_WEEKS = {};
+    function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
 
-    async function loadDataFiles() {
-      const fallbackPlayers = window.__FALLBACK_PLAYERS || [];
-      const fallbackWeeks = window.__FALLBACK_WEEKS || {};
-
-      async function tryFetch(url) {
-        try {
-          const res = await fetch(url, { cache: 'no-store' });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return await res.json();
-        } catch (err) {
-          console.warn('Could not fetch', url, err);
-          return null;
-        }
-      }
-
-      const [playersJson, weeksJson] = await Promise.all([
-        tryFetch('data/players.json'),
-        tryFetch('data/weeks.json')
-      ]);
-
-      const weeksData = weeksJson || fallbackWeeks;
-
+    async function loadDataFiles(){
+      async function tryFetch(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }catch(e){console.warn('fetch',url,e);return null;} }
+      const [playersJson, weeksJson] = await Promise.all([ tryFetch('data/players.json'), tryFetch('data/weeks.json') ]);
+      const weeksData = weeksJson || {};
       const mergedWeeks = {};
-      for (const [wk, obj] of Object.entries(weeksData)) {
+      for(const [wk,obj] of Object.entries(weeksData)){
         const merged = {};
-        (obj.players || []).forEach(r => {
-          const name = r.name.trim().toUpperCase();
-          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
-          merged[name].goals += Number(r.goals || 0);
-          merged[name].assists += Number(r.assists || 0);
+        (obj.players||[]).forEach(r=>{
+          const name = titleCase(r.name||'');
+          if(!name) return;
+          if(!merged[name]) merged[name] = { name, goals:0, assists:0 };
+          merged[name].goals += Number(r.goals||0);
+          merged[name].assists += Number(r.assists||0);
         });
         mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
       }
 
       const roster = new Map();
-      (playersJson || fallbackPlayers).forEach(p => {
-        roster.set(p.name.trim().toUpperCase(), {
-          name: p.name.trim().toUpperCase(),
-          goals: Number(p.goals || 0),
-          assists: Number(p.assists || 0)
-        });
+      (playersJson||[]).forEach(p=>{
+        const n = titleCase(p.name||'');
+        if(!n) return;
+        roster.set(n, { name:n, goals:0, assists:0 });
       });
 
-      for (const week of Object.values(mergedWeeks)) {
-        week.players.forEach(p => {
-          if (!roster.has(p.name)) {
-            roster.set(p.name, { name: p.name, goals: 0, assists: 0 });
-          }
+      for(const wk of Object.values(mergedWeeks)){
+        (wk.players||[]).forEach(p=>{
+          const n = titleCase(p.name||'');
+          if(!n) return;
+          if(!roster.has(n)) roster.set(n, { name:n, goals:0, assists:0 });
+          const rec = roster.get(n);
+          rec.goals += Number(p.goals||0);
+          rec.assists += Number(p.assists||0);
         });
       }
 
       players = Array.from(roster.values());
-      renderPlayersGrid();
+      render();
+      attachFilter();
     }
 
-    function renderPlayersGrid() {
+    function render(){
       const grid = document.getElementById('players-grid');
+      const q = (document.getElementById('filter')?.value||'').trim().toLowerCase();
       grid.innerHTML = players
-        .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists))
-        .map(p => `
+        .filter(p => !q || p.name.toLowerCase().includes(q))
+        .sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists))
+        .map(p=>`
           <div class="player-card">
-            <strong>${p.name}</strong><br>
-            Goals: ${p.goals}<br>
-            Assists: ${p.assists}
+            <strong>${p.name}</strong>
+            <div class="meta">Goals: ${p.goals} • Assists: ${p.assists} • Total: ${p.goals + p.assists}</div>
           </div>
-        `)
-        .join('');
+        `).join('') || '<div style="color:#9aa4b2">No players</div>';
+    }
+
+    function attachFilter(){
+      const f = document.getElementById('filter');
+      if(!f) return;
+      f.addEventListener('input', ()=> render());
     }
 
     let players = [];
