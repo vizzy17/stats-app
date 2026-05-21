@@ -4,30 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TNF Stats — Highlights</title>
-  <style>
-    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:#071026;color:#eaf2ff;padding:28px}
-    .wrap{max-width:980px;margin:0 auto}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    h1{margin:0}
-    .week-list{display:grid;gap:12px}
-    .week-card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
-    .week-card h3{margin:0 0 8px 0}
-    .links a{display:inline-block;margin-right:10px;color:#ffd9a8;text-decoration:none}
-    .meta{color:#9aa4b2;font-size:13px}
-    footer{margin-top:20px;color:#9aa4b2;text-align:center}
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Highlights</h1>
-      <div class="meta">Auto‑merged weeks view</div>
-    </header>
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Highlights</h1>
+        <div style="font-size:13px;color:var(--text-muted)">Auto‑merged weeks view</div>
+      </div>
+      <div>
+        <button id="themeToggle">Toggle theme</button>
+      </div>
+    </div>
+  </header>
 
-    <div id="highlights-list" class="week-list"></div>
+  <main>
+    <section id="highlights-list"></section>
+  </main>
 
-    <footer>© TNF Stats</footer>
-  </div>
+  <footer>
+    <small>© TNF Stats</small>
+  </footer>
 
   <script>
     function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
@@ -52,7 +50,7 @@
         render(mergedWeeks);
       }catch(e){
         console.warn('Could not load weeks', e);
-        document.getElementById('highlights-list').innerHTML = '<div style="color:#9aa4b2">No highlights available</div>';
+        document.getElementById('highlights-list').innerHTML = '<div class="meta">No highlights available</div>';
       }
     }
 
@@ -62,19 +60,26 @@
         const date = data.date ? `<div class="meta">${data.date}</div>` : '';
         const players = (data.players||[]).slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists)).slice(0,6).map(p=>`${p.name} (${p.goals}G ${p.assists}A)`).join(', ');
         return `
-          <div class="week-card">
-            <h3>${wk} ${data.title ? '— ' + data.title : ''}</h3>
-            ${date}
-            <div style="margin-top:8px" class="links">
-              ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Highlights</a>` : ''}
-              ${data.fullVideoUrl ? `<a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ''}
+          <div class="week-block">
+            <div class="week-header"><span>${wk}</span><span>${data.title || ''}</span></div>
+            <div class="week-body">
+              ${date}
+              <div style="margin-top:8px">
+                ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Highlights</a>` : ''}
+                ${data.fullVideoUrl ? ` <a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ''}
+              </div>
+              ${players ? `<div style="margin-top:8px" class="meta">Top: ${players}</div>` : ''}
             </div>
-            ${players ? `<div style="margin-top:10px" class="meta">Top: ${players}</div>` : ''}
           </div>
         `;
       }).join('');
-      container.innerHTML = html || '<div style="color:#9aa4b2">No highlights yet</div>';
+      container.innerHTML = html || '<div class="meta">No highlights yet</div>';
     }
+
+    // Theme toggle
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'themeToggle') document.body.classList.toggle('dark');
+    });
 
     loadData();
   </script>
