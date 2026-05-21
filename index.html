@@ -3,186 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF — Dashboard</title>
-  <style>
-    :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882;--green:#00FF85}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-    .wrap{max-width:1100px;margin:24px auto;padding:18px}
-    .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
-    .muted{color:var(--muted)}
-    .flex{display:flex;align-items:center}
-    .gap-2{gap:10px}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
-    .btn.active{background:rgba(255,40,130,.12);border-color:rgba(255,40,130,.28)}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;font-size:14px}
-    thead th{color:var(--muted);font-size:12px}
-    .player-photo{width:72px;height:72px;border-radius:10px;object-fit:cover;border:3px solid rgba(255,255,255,.04)}
-    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
-    @media(max-width:720px){ .grid-3{grid-template-columns:1fr} }
-  </style>
+  <title>TNF Stats – Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <div class="wrap">
-    <header class="flex" style="justify-content:space-between;margin-bottom:12px">
-      <div>
-        <div style="font-weight:700;font-size:20px">TNF League Dashboard</div>
-        <div class="muted">Thursday night community league</div>
-      </div>
-      <nav class="flex gap-2">
-        <a href="index.html" class="btn">Dashboard</a>
-        <a href="highlights.html" class="btn">Highlights</a>
-        <a href="players.html" class="btn">Players</a>
-      </nav>
-    </header>
+  <header>
+    <h1>TNF Stats Dashboard</h1>
+  </header>
 
-    <!-- Hero -->
-    <section class="card" id="hero">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-        <div><div class="muted" style="font-size:12px">Total Goals</div><div id="heroGoals" style="font-size:28px;font-weight:800">0</div></div>
-        <div><div class="muted" style="font-size:12px">Total Assists</div><div id="heroAssists" style="font-size:28px;font-weight:800">0</div></div>
-        <div><div class="muted" style="font-size:12px">Total Contributions</div><div id="heroTotal" style="font-size:28px;font-weight:800">0</div></div>
-      </div>
+  <main>
+    <section id="leaderboard">
+      <h2>Leaderboard</h2>
+      <div id="players-grid"></div>
     </section>
 
-    <!-- Leaderboard -->
-    <section class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div><strong>Leaderboard</strong><div id="leaderboardSubtitle" class="muted" style="font-size:12px">Sorted by goals</div></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn sort-btn" data-sort="goals">Goals</button>
-          <button class="btn sort-btn" data-sort="total">Total</button>
-          <button class="btn sort-btn" data-sort="assists">Assists</button>
-          <button id="showAllLeaderboard" class="btn">Show full leaderboard</button>
-        </div>
-      </div>
-      <div style="max-height:320px;overflow:auto">
-        <table><thead><tr><th>#</th><th>Player</th><th style="text-align:right">G</th><th style="text-align:right">A</th><th style="text-align:right">Total</th></tr></thead>
-        <tbody id="leaderboardBody"></tbody></table>
-      </div>
+    <section id="payments">
+      <h2>Payments Log</h2>
+      <div id="payments-log"></div>
     </section>
+  </main>
 
-    <!-- Top lists -->
-    <section class="card" style="display:flex;gap:12px;flex-wrap:wrap">
-      <div style="flex:1">
-        <div style="font-weight:700">Top 3 Scorers</div>
-        <div id="topScorers" style="display:flex;gap:10px;margin-top:8px"></div>
-      </div>
-      <div style="flex:1">
-        <div style="font-weight:700">Top 3 Assist Leaders</div>
-        <div id="topAssists" style="display:flex;gap:10px;margin-top:8px"></div>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- FALLBACK (used only if fetch fails) -->
-  <script>
-    window.__FALLBACK_PLAYERS = [
-      { "name": "MUYI" }, { "name": "Okky" }, { "name": "Hassan" }
-    ];
-    window.__FALLBACK_WEEKS = {
-      "WEEK-LATEST": {
-        "date": new Date().toISOString().split('T')[0],
-        "players": [
-          { "name": "MUYI", "goals": 1, "assists": 0 },
-          { "name": "Okky", "goals": 1, "assists": 0 }
-        ],
-        "videoUrl": "",
-        "fullVideoUrl": ""
-      }
-    };
-  </script>
+  <footer>
+    <small>© TNF Stats</small>
+  </footer>
 
   <script>
-    /* Core rendering logic (keeps same API across pages) */
-    const SORT_KEY = 'tnf_sort';
-    let currentSort = localStorage.getItem(SORT_KEY) || 'goals';
-    let players = [];
-    let weeks = {};
-    let showFullLeaderboard = false;
+    // -------------------------------
+    // FALLBACK DATA (optional)
+    // -------------------------------
+    window.__FALLBACK_PLAYERS = [];
+    window.__FALLBACK_WEEKS = {};
 
-    function computeTotals() {
-      const lookup = {};
-      players.forEach(p => { lookup[p.name.toLowerCase()] = { name: p.name, goals: 0, assists: 0 }; });
-      Object.values(weeks).forEach(w => (w.players||[]).forEach(r => {
-        const name = (r.name||'').trim();
-        if (!name) return;
-        const key = name.toLowerCase();
-        if (!lookup[key]) lookup[key] = { name, goals: 0, assists: 0 };
-        lookup[key].goals += Number(r.goals || 0);
-        lookup[key].assists += Number(r.assists || 0);
-      }));
-      players = Object.keys(lookup).map(k => {
-        const p = lookup[k];
-        return { name: p.name, goals: p.goals, assists: p.assists, total: p.goals + p.assists };
-      });
-    }
-
-    function renderHero() {
-      const totals = Object.values(weeks).reduce((acc,w)=>{ (w.players||[]).forEach(p=>{ acc.goals+=Number(p.goals||0); acc.assists+=Number(p.assists||0); }); return acc; }, {goals:0, assists:0});
-      document.getElementById('heroGoals').textContent = totals.goals;
-      document.getElementById('heroAssists').textContent = totals.assists;
-      document.getElementById('heroTotal').textContent = totals.goals + totals.assists;
-    }
-
-    function renderTopPlayers() {
-      const byGoals = [...players].sort((a,b)=> (b.goals||0)-(a.goals||0)).slice(0,3);
-      const byAssists = [...players].sort((a,b)=> (b.assists||0)-(a.assists||0)).slice(0,3);
-      const s = document.getElementById('topScorers'), a = document.getElementById('topAssists');
-      if (s) s.innerHTML = ''; if (a) a.innerHTML = '';
-      byGoals.forEach((p,i)=> {
-        const d = document.createElement('div'); d.style.cursor='pointer'; d.style.display='flex'; d.style.alignItems='center'; d.style.gap='8px';
-        d.innerHTML = `<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div style="margin-left:6px"><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">G: ${p.goals||0}</div></div>`;
-        d.addEventListener('click', ()=> alert(`${p.name}: G:${p.goals} A:${p.assists}`));
-        s && s.appendChild(d);
-      });
-      byAssists.forEach((p,i)=> {
-        const d = document.createElement('div'); d.style.cursor='pointer'; d.style.display='flex'; d.style.alignItems='center'; d.style.gap='8px';
-        d.innerHTML = `<div style="font-weight:700">${i+1}</div><img src="photos/${encodeURIComponent(p.name)}.jpg" class="player-photo" onerror="this.style.display='none'"><div style="margin-left:6px"><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:12px">A: ${p.assists||0}</div></div>`;
-        d.addEventListener('click', ()=> alert(`${p.name}: G:${p.goals} A:${p.assists}`));
-        a && a.appendChild(d);
-      });
-    }
-
-    function updateSortButtons() {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === currentSort));
-      const sub = document.getElementById('leaderboardSubtitle'); if (sub) sub.textContent = `Sorted by ${currentSort}`;
-    }
-
-    function renderLeaderboard() {
-      const tbody = document.getElementById('leaderboardBody'); if (!tbody) return;
-      players.forEach(p => p.total = (Number(p.goals)||0) + (Number(p.assists)||0));
-      let sorted = [...players].sort((a,b)=> (b[currentSort]||0) - (a[currentSort]||0));
-      if (currentSort === 'total') sorted = sorted.sort((a,b)=> { const d=(b.total||0)-(a.total||0); return d!==0?d:((b.goals||0)-(a.goals||0)); });
-      tbody.innerHTML = '';
-      const limit = showFullLeaderboard ? sorted.length : Math.max(8, Math.ceil(sorted.length/2));
-      sorted.slice(0,limit).forEach((p,i)=> {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i+1}</td><td style="display:flex;align-items:center;gap:8px"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div>${p.name}</div></td><td style="text-align:right">${p.goals||0}</td><td style="text-align:right">${p.assists||0}</td><td style="text-align:right;font-weight:700">${p.total||0}</td>`;
-        tbody.appendChild(tr);
-      });
-      updateSortButtons();
-    }
-
-    // Attach controls
-    document.addEventListener('click', function(e){
-      if (e.target && e.target.matches('.sort-btn')) {
-        currentSort = e.target.dataset.sort || 'goals';
-        localStorage.setItem(SORT_KEY, currentSort);
-        renderLeaderboard();
-      }
-    });
-    document.getElementById('showAllLeaderboard') && document.getElementById('showAllLeaderboard').addEventListener('click', ()=> {
-      showFullLeaderboard = !showFullLeaderboard;
-      document.getElementById('showAllLeaderboard').textContent = showFullLeaderboard ? 'Show condensed' : 'Show full leaderboard';
-      renderLeaderboard();
-    });
-
-    /* Loader: fetch centralized data and render (fallback if fetch fails) */
+    // -------------------------------
+    // FULL AUTOMATION LOADER
+    // -------------------------------
     async function loadDataFiles() {
       const fallbackPlayers = window.__FALLBACK_PLAYERS || [];
       const fallbackWeeks = window.__FALLBACK_WEEKS || {};
+
       async function tryFetch(url) {
         try {
           const res = await fetch(url, { cache: 'no-store' });
@@ -193,22 +52,78 @@
           return null;
         }
       }
-      const [playersJson, weeksJson] = await Promise.all([tryFetch('data/players.json'), tryFetch('data/weeks.json')]);
-      window.playersData = Array.isArray(playersJson) ? playersJson : fallbackPlayers;
-      window.weeksData = (weeksJson && typeof weeksJson === 'object') ? weeksJson : fallbackWeeks;
 
-      // assign to local variables used by render functions
-      players = window.playersData.map(p => ({ name: p.name, goals: Number(p.goals || 0), assists: Number(p.assists || 0), total: (Number(p.goals||0)+Number(p.assists||0)) }));
-      weeks = window.weeksData;
+      const [playersJson, weeksJson] = await Promise.all([
+        tryFetch('data/players.json'),
+        tryFetch('data/weeks.json')
+      ]);
 
-      computeTotals();
-      renderHero();
-      renderTopPlayers();
-      renderLeaderboard();
-      updateSortButtons();
+      const weeksData = weeksJson || fallbackWeeks;
+
+      // 🔥 AUTO‑MERGE DUPLICATES + NORMALIZE NAMES
+      const mergedWeeks = {};
+      for (const [wk, obj] of Object.entries(weeksData)) {
+        const merged = {};
+        (obj.players || []).forEach(r => {
+          const name = r.name.trim().toUpperCase();
+          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
+          merged[name].goals += Number(r.goals || 0);
+          merged[name].assists += Number(r.assists || 0);
+        });
+        mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
+      }
+
+      // 🔥 AUTO‑ADD NEW PLAYERS TO ROSTER
+      const roster = new Map();
+      (playersJson || fallbackPlayers).forEach(p => {
+        roster.set(p.name.trim().toUpperCase(), {
+          name: p.name.trim().toUpperCase(),
+          goals: Number(p.goals || 0),
+          assists: Number(p.assists || 0)
+        });
+      });
+
+      for (const week of Object.values(mergedWeeks)) {
+        week.players.forEach(p => {
+          if (!roster.has(p.name)) {
+            roster.set(p.name, { name: p.name, goals: 0, assists: 0 });
+          }
+        });
+      }
+
+      // 🔥 BUILD FINAL PLAYERS ARRAY
+      players = Array.from(roster.values());
+      renderPlayersGrid();
+      renderPaymentsLog();
     }
 
-    // Start loader
+    // -------------------------------
+    // RENDER FUNCTIONS
+    // -------------------------------
+    function renderPlayersGrid() {
+      const grid = document.getElementById('players-grid');
+      grid.innerHTML = players
+        .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists))
+        .map(p => `
+          <div class="player-card">
+            <strong>${p.name}</strong><br>
+            Goals: ${p.goals}<br>
+            Assists: ${p.assists}
+          </div>
+        `)
+        .join('');
+    }
+
+    function renderPaymentsLog() {
+      document.getElementById('payments-log').innerHTML = `
+        <p>Payments feature coming soon.</p>
+      `;
+    }
+
+    // -------------------------------
+    // INIT
+    // -------------------------------
+    let players = [];
     loadDataFiles();
   </script>
 </body>
