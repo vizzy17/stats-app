@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF Stats — Dashboard</title>
+  <title>TNF League Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <div class="header-top">
       <div>
-        <h1>TNF Stats Dashboard</h1>
-        <div style="font-size:13px;color:var(--text-muted)">Auto‑clean + UI merge enabled</div>
+        <h1>TNF League Dashboard</h1>
+        <div style="font-size:13px;color:var(--text-muted)">Thursday night community league</div>
       </div>
       <div>
         <button id="themeToggle">Toggle theme</button>
@@ -21,22 +21,50 @@
 
   <main>
     <section>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h2>Leaderboard</h2>
-        <input id="searchInput" placeholder="Search player name" />
+      <h2>Dashboard</h2>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px">
+        <div class="week-block" style="padding:12px;min-width:160px">
+          <div class="week-header"><span>Total Goals</span></div>
+          <div style="padding:10px;font-size:22px;font-weight:700" id="total-goals">—</div>
+        </div>
+        <div class="week-block" style="padding:12px;min-width:160px">
+          <div class="week-header"><span>Total Assists</span></div>
+          <div style="padding:10px;font-size:22px;font-weight:700" id="total-assists">—</div>
+        </div>
+        <div class="week-block" style="padding:12px;min-width:160px">
+          <div class="week-header"><span>Total Contributions</span></div>
+          <div style="padding:10px;font-size:22px;font-weight:700" id="total-contrib">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Leaderboard</h2>
+      <div style="margin-bottom:8px;color:var(--text-muted)">Sorted by goals</div>
+      <div style="margin-bottom:8px">
+        <button id="sortGoals">Goals</button>
+        <button id="sortTotal">Total</button>
+        <button id="sortAssists">Assists</button>
+        <button id="showFull">Show full leaderboard</button>
       </div>
 
-      <div id="players-grid" aria-live="polite"></div>
+      <table id="leaderboard-table" aria-live="polite">
+        <thead>
+          <tr><th>#</th><th>Player</th><th>G</th><th>A</th><th>Total</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </section>
 
-    <section>
-      <h2>Top scorers</h2>
-      <div id="top-list"></div>
-    </section>
-
-    <section>
-      <h2>Payments</h2>
-      <div id="payments-log" class="meta">Payments feature coming soon.</div>
+    <section style="display:flex;gap:18px;flex-wrap:wrap;margin-top:18px">
+      <div style="flex:1;min-width:260px">
+        <h3>Top 3 Scorers</h3>
+        <div id="top-scorers"></div>
+      </div>
+      <div style="flex:1;min-width:260px">
+        <h3>Top 3 Assist Leaders</h3>
+        <div id="top-assists"></div>
+      </div>
     </section>
   </main>
 
@@ -46,128 +74,91 @@
 
   <script>
     // Utilities
-    function titleCase(s){
-      return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' ');
-    }
+    function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
 
-    // Runtime auto-fix loader (merges duplicates, normalizes names, auto-adds players)
-    async function loadDataFiles() {
-      async function tryFetch(url){
-        try {
-          const res = await fetch(url, { cache: 'no-store' });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return await res.json();
-        } catch (e) {
-          console.warn('fetch failed', url, e);
-          return null;
-        }
-      }
+    // Fetch and auto-fix data (merge duplicates, normalize names, auto-add players)
+    async function loadAndRender() {
+      async function fetchJson(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }catch(e){ console.warn('fetch',url,e); return null; } }
 
-      const [playersJson, weeksJson] = await Promise.all([
-        tryFetch('data/players.json'),
-        tryFetch('data/weeks.json')
-      ]);
-
-      const weeksData = weeksJson || {};
-
-      // Merge duplicates per week and normalize names
+      const [playersJson, weeksJson] = await Promise.all([ fetchJson('data/players.json'), fetchJson('data/weeks.json') ]);
+      const weeks = weeksJson || {};
+      // merge duplicates per week
       const mergedWeeks = {};
-      for (const [wk, obj] of Object.entries(weeksData)) {
+      for(const [wk,obj] of Object.entries(weeks)){
         const merged = {};
-        (obj.players || []).forEach(r => {
-          const name = titleCase(String(r.name || ''));
-          if (!name) return;
-          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
-          merged[name].goals += Number(r.goals || 0);
-          merged[name].assists += Number(r.assists || 0);
+        (obj.players||[]).forEach(r=>{
+          const n = titleCase(r.name||'');
+          if(!n) return;
+          if(!merged[n]) merged[n] = { name:n, goals:0, assists:0 };
+          merged[n].goals += Number(r.goals||0);
+          merged[n].assists += Number(r.assists||0);
         });
         mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
       }
 
-      // Build roster from players.json and add missing players found in weeks
+      // build roster from players.json and add missing players
       const roster = new Map();
-      (playersJson || []).forEach(p => {
-        const n = titleCase(p.name || '');
-        if (!n) return;
-        roster.set(n, { name: n, goals: 0, assists: 0 });
+      (playersJson||[]).forEach(p=>{
+        const n = titleCase(p.name||'');
+        if(!n) return;
+        roster.set(n, { name:n, goals:0, assists:0 });
       });
-
-      for (const wk of Object.values(mergedWeeks)) {
-        (wk.players || []).forEach(p => {
-          const n = titleCase(p.name || '');
-          if (!n) return;
-          if (!roster.has(n)) roster.set(n, { name: n, goals: 0, assists: 0 });
+      for(const wk of Object.values(mergedWeeks)){
+        (wk.players||[]).forEach(p=>{
+          const n = titleCase(p.name||'');
+          if(!n) return;
+          if(!roster.has(n)) roster.set(n, { name:n, goals:0, assists:0 });
+          const rec = roster.get(n);
+          rec.goals += Number(p.goals||0);
+          rec.assists += Number(p.assists||0);
         });
       }
 
-      // Recalculate totals from merged weeks (authoritative totals)
-      const totals = {};
-      for (const wk of Object.values(mergedWeeks)) {
-        (wk.players || []).forEach(p => {
-          const n = titleCase(p.name || '');
-          if (!n) return;
-          if (!totals[n]) totals[n] = { goals: 0, assists: 0 };
-          totals[n].goals += Number(p.goals || 0);
-          totals[n].assists += Number(p.assists || 0);
-        });
-      }
+      const players = Array.from(roster.values());
+      // totals
+      const totalGoals = players.reduce((s,p)=> s + Number(p.goals||0), 0);
+      const totalAssists = players.reduce((s,p)=> s + Number(p.assists||0), 0);
+      document.getElementById('total-goals').textContent = totalGoals;
+      document.getElementById('total-assists').textContent = totalAssists;
+      document.getElementById('total-contrib').textContent = totalGoals + totalAssists;
 
-      // Apply totals to roster
-      for (const [name, rec] of roster.entries()) {
-        const t = totals[name] || { goals: 0, assists: 0 };
-        rec.goals = t.goals;
-        rec.assists = t.assists;
-      }
-
-      players = Array.from(roster.values());
-      renderPlayersGrid();
-      renderTopList();
-      attachSearch();
-    }
-
-    // Rendering
-    function renderPlayersGrid() {
-      const grid = document.getElementById('players-grid');
-      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-      const html = players
-        .filter(p => !q || p.name.toLowerCase().includes(q))
-        .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists))
-        .map(p => `
-          <div class="player-card">
-            <strong class="playerName">${p.name}</strong>
-            <div class="meta">Goals: ${p.goals} • Assists: ${p.assists} • Total: ${p.goals + p.assists}</div>
-          </div>
+      // render leaderboard default sort by goals desc
+      function renderTable(sorted){
+        const tbody = document.querySelector('#leaderboard-table tbody');
+        tbody.innerHTML = sorted.map((p,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td class="playerName">${p.name}</td>
+            <td>${p.goals}</td>
+            <td>${p.assists}</td>
+            <td>${p.goals + p.assists}</td>
+          </tr>
         `).join('');
-      grid.innerHTML = html || '<div class="meta">No players found</div>';
-    }
-
-    function renderTopList() {
-      const top = document.getElementById('top-list');
-      const topPlayers = players.slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists)).slice(0,8);
-      top.innerHTML = topPlayers.map((p,i)=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <div><strong>${i+1}. ${p.name}</strong><div class="meta">G ${p.goals} • A ${p.assists}</div></div>
-          <div style="font-weight:700;color:var(--accent)">${p.goals + p.assists}</div>
-        </div>
-      `).join('') || '<div class="meta">No top scorers</div>';
-    }
-
-    function attachSearch() {
-      const s = document.getElementById('searchInput');
-      if (!s) return;
-      s.addEventListener('input', () => renderPlayersGrid());
-    }
-
-    // Theme toggle (keeps existing style.css dark mode)
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'themeToggle') {
-        document.body.classList.toggle('dark');
       }
-    });
 
-    // Init
-    let players = [];
-    loadDataFiles();
+      // sorts
+      const byGoals = players.slice().sort((a,b)=> b.goals - a.goals || (b.goals+b.assists)-(a.goals+a.assists));
+      const byTotal = players.slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists));
+      const byAssists = players.slice().sort((a,b)=> b.assists - a.assists || (b.goals+b.assists)-(a.goals+a.assists));
+
+      renderTable(byGoals);
+
+      document.getElementById('sortGoals').onclick = ()=> renderTable(byGoals);
+      document.getElementById('sortTotal').onclick = ()=> renderTable(byTotal);
+      document.getElementById('sortAssists').onclick = ()=> renderTable(byAssists);
+      document.getElementById('showFull').onclick = ()=> renderTable(byTotal);
+
+      // top 3 scorers and assist leaders
+      const topSc = byGoals.slice(0,3);
+      const topAs = byAssists.slice(0,3);
+      document.getElementById('top-scorers').innerHTML = topSc.map((p,i)=>`<div><strong>${i+1} ${p.name}</strong><div class="meta">G: ${p.goals}</div></div>`).join('');
+      document.getElementById('top-assists').innerHTML = topAs.map((p,i)=>`<div><strong>${i+1} ${p.name}</strong><div class="meta">A: ${p.assists}</div></div>`).join('');
+    }
+
+    // theme toggle
+    document.addEventListener('click', (e)=>{ if(e.target && e.target.id==='themeToggle') document.body.classList.toggle('dark'); });
+
+    loadAndRender();
   </script>
 </body>
 </html>
