@@ -173,6 +173,7 @@
   <!--
     Changelog (JS refactor)
     - Option B applied: cleaned JS, preserved UI.
+    - Highlights no longer embed iframes; they show safe links only.
     - Added normalization, duplicate merging, auto-add players, authoritative totals.
     - Safe JSON loading with fallback.
     - Kept all DOM IDs and event hooks unchanged.
@@ -409,9 +410,11 @@
           const card = document.createElement('div'); card.className='card';
           const goalsHtml = (w.players||[]).filter(p=>Number(p.goals||0)>0).sort((a,b)=>b.goals-a.goals).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted" style="font-size:12px">G: ${p.goals||0}</div></div></div>`).join('');
           const assistsHtml = (w.players||[]).filter(p=>Number(p.assists||0)>0).sort((a,b)=>b.assists-a.assists).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted" style="font-size:12px">A: ${p.assists||0}</div></div></div>`).join('');
+          // NOTE: no iframe embed — show link only
+          const videoLink = w.fullVideoUrl ? `<div style="margin-top:8px" class="muted">Full match: <a href="${w.fullVideoUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${w.fullVideoUrl}</a></div>` : '';
           card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${k}</strong> <div class="muted" style="font-size:12px">${w.date||''}</div><div class="muted" style="font-size:12px;margin-top:6px">Total contributions: <span style="display:inline-block;background:linear-gradient(90deg,var(--green),var(--neon));color:#001;padding:6px 10px;border-radius:999px;font-weight:700">${total}</span></div></div><div class="muted" style="font-size:12px">Highlights</div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div><div style="font-weight:600">Goalscorers</div><div style="margin-top:8px">${goalsHtml||'<div class="muted">No goals</div>'}</div></div><div><div style="font-weight:600">Assists</div><div style="margin-top:8px">${assistsHtml||'<div class="muted">No assists</div>'}</div></div></div>
-            ${w.videoUrl?`<div style="margin-top:12px"><div style="font-weight:600">Daily Highlights</div><div style="margin-top:8px;position:relative;padding-top:56.25%"><iframe src="${w.videoUrl}" style="position:absolute;left:0;top:0;width:100%;height:100%;border:0;border-radius:8px" allowfullscreen></iframe></div><div style="margin-top:8px" class="muted">Full match: ${w.fullVideoUrl?`<a href="${w.fullVideoUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${w.fullVideoUrl}</a>`:'Not available'}</div></div>`:''}`;
+            ${videoLink}`;
           container.appendChild(card);
         });
       } catch (err) { console.error('renderWeeks error', err); }
