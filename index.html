@@ -4,71 +4,60 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TNF Stats — Dashboard</title>
-  <style>
-    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#ffb86b;--glass:rgba(255,255,255,0.03)}
-    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    body{margin:0;background:linear-gradient(180deg,#071026 0%,#071a2a 100%);color:#e6eef6;min-height:100vh;padding:28px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-    header h1{margin:0;font-size:20px;letter-spacing:0.6px}
-    .container{display:grid;grid-template-columns:1fr 360px;gap:20px}
-    .panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
-    #players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-    .player-card{background:var(--card);padding:12px;border-radius:10px;color:#eaf2ff;display:flex;flex-direction:column;gap:6px;border:1px solid var(--glass)}
-    .player-top{display:flex;align-items:center;gap:10px}
-    .avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#2b6cff,#7b61ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:white}
-    .name{font-weight:700;font-size:14px}
-    .meta{font-size:13px;color:var(--muted)}
-    .totals{margin-top:8px;display:flex;gap:8px}
-    .chip{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-weight:600;color:#dbe9ff}
-    aside .panel h3{margin:0 0 10px 0}
-    #search{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;margin-bottom:12px}
-    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
-    @media(max-width:900px){.container{grid-template-columns:1fr}aside{order:2}}
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>TNF Stats Dashboard</h1>
-    <div style="color:var(--muted);font-size:13px">Auto‑clean + UI merge enabled</div>
+    <div class="header-top">
+      <div>
+        <h1>TNF Stats Dashboard</h1>
+        <div style="font-size:13px;color:var(--text-muted)">Auto‑clean + UI merge enabled</div>
+      </div>
+      <div>
+        <button id="themeToggle">Toggle theme</button>
+      </div>
+    </div>
   </header>
 
-  <div class="container">
-    <main class="panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <h2 style="margin:0">Leaderboard</h2>
-        <input id="search" placeholder="Search player name" />
+  <main>
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2>Leaderboard</h2>
+        <input id="searchInput" placeholder="Search player name" />
       </div>
 
       <div id="players-grid" aria-live="polite"></div>
-    </main>
+    </section>
 
-    <aside class="panel">
-      <h3>Top scorers</h3>
-      <div id="top-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    <section>
+      <h2>Top scorers</h2>
+      <div id="top-list"></div>
+    </section>
 
-      <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-
-      <h3>Payments</h3>
+    <section>
+      <h2>Payments</h2>
       <div id="payments-log" class="meta">Payments feature coming soon.</div>
-    </aside>
-  </div>
+    </section>
+  </main>
 
-  <footer>© TNF Stats</footer>
+  <footer>
+    <small>© TNF Stats</small>
+  </footer>
 
   <script>
-    // ---------- Utilities ----------
+    // Utilities
     function titleCase(s){
       return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' ');
     }
 
-    // ---------- Runtime Auto-Fix Loader ----------
+    // Runtime auto-fix loader (merges duplicates, normalizes names, auto-adds players)
     async function loadDataFiles() {
       async function tryFetch(url){
         try {
           const res = await fetch(url, { cache: 'no-store' });
-          if(!res.ok) throw new Error('HTTP ' + res.status);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
           return await res.json();
-        } catch(e){
+        } catch (e) {
           console.warn('fetch failed', url, e);
           return null;
         }
@@ -80,112 +69,103 @@
       ]);
 
       const weeksData = weeksJson || {};
+
       // Merge duplicates per week and normalize names
       const mergedWeeks = {};
-      for(const [wk, obj] of Object.entries(weeksData)){
+      for (const [wk, obj] of Object.entries(weeksData)) {
         const merged = {};
-        (obj.players||[]).forEach(r=>{
-          const name = titleCase(String(r.name||''));
-          if(!name) return;
-          if(!merged[name]) merged[name] = { name, goals:0, assists:0 };
-          merged[name].goals += Number(r.goals||0);
-          merged[name].assists += Number(r.assists||0);
+        (obj.players || []).forEach(r => {
+          const name = titleCase(String(r.name || ''));
+          if (!name) return;
+          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
+          merged[name].goals += Number(r.goals || 0);
+          merged[name].assists += Number(r.assists || 0);
         });
         mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
       }
 
-      // Build roster from players.json and add any missing players found in weeks
+      // Build roster from players.json and add missing players found in weeks
       const roster = new Map();
-      (playersJson||[]).forEach(p=>{
-        const n = titleCase(p.name||'');
-        if(!n) return;
-        roster.set(n, { name: n, goals: Number(p.goals||0), assists: Number(p.assists||0) });
+      (playersJson || []).forEach(p => {
+        const n = titleCase(p.name || '');
+        if (!n) return;
+        roster.set(n, { name: n, goals: 0, assists: 0 });
       });
 
-      for(const wk of Object.values(mergedWeeks)){
-        (wk.players||[]).forEach(p=>{
-          const n = titleCase(p.name||'');
-          if(!n) return;
-          if(!roster.has(n)) roster.set(n, { name: n, goals: 0, assists: 0 });
+      for (const wk of Object.values(mergedWeeks)) {
+        (wk.players || []).forEach(p => {
+          const n = titleCase(p.name || '');
+          if (!n) return;
+          if (!roster.has(n)) roster.set(n, { name: n, goals: 0, assists: 0 });
         });
       }
 
-      // Recalculate totals from merged weeks (this ensures authoritative totals)
+      // Recalculate totals from merged weeks (authoritative totals)
       const totals = {};
-      for(const wk of Object.values(mergedWeeks)){
-        (wk.players||[]).forEach(p=>{
-          const n = titleCase(p.name||'');
-          if(!n) return;
-          if(!totals[n]) totals[n] = { goals:0, assists:0 };
-          totals[n].goals += Number(p.goals||0);
-          totals[n].assists += Number(p.assists||0);
+      for (const wk of Object.values(mergedWeeks)) {
+        (wk.players || []).forEach(p => {
+          const n = titleCase(p.name || '');
+          if (!n) return;
+          if (!totals[n]) totals[n] = { goals: 0, assists: 0 };
+          totals[n].goals += Number(p.goals || 0);
+          totals[n].assists += Number(p.assists || 0);
         });
       }
 
       // Apply totals to roster
-      for(const [name, rec] of roster.entries()){
-        const t = totals[name] || { goals:0, assists:0 };
+      for (const [name, rec] of roster.entries()) {
+        const t = totals[name] || { goals: 0, assists: 0 };
         rec.goals = t.goals;
         rec.assists = t.assists;
       }
 
-      // Final players array
       players = Array.from(roster.values());
-
       renderPlayersGrid();
       renderTopList();
       attachSearch();
     }
 
-    // ---------- Rendering ----------
-    function renderPlayersGrid(){
+    // Rendering
+    function renderPlayersGrid() {
       const grid = document.getElementById('players-grid');
-      const q = (document.getElementById('search')?.value||'').trim().toLowerCase();
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
       const html = players
         .filter(p => !q || p.name.toLowerCase().includes(q))
-        .sort((a,b)=> (b.goals + b.assists) - (a.goals + a.assists))
+        .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists))
         .map(p => `
           <div class="player-card">
-            <div class="player-top">
-              <div class="avatar">${(p.name.split(' ').map(x=>x[0]||'').slice(0,2).join(''))}</div>
-              <div style="flex:1">
-                <div class="name">${p.name}</div>
-                <div class="meta">Total: ${p.goals + p.assists} • Goals ${p.goals} • Assists ${p.assists}</div>
-              </div>
-            </div>
-            <div class="totals">
-              <div class="chip">Goals ${p.goals}</div>
-              <div class="chip">Assists ${p.assists}</div>
-            </div>
+            <strong class="playerName">${p.name}</strong>
+            <div class="meta">Goals: ${p.goals} • Assists: ${p.assists} • Total: ${p.goals + p.assists}</div>
           </div>
         `).join('');
-      grid.innerHTML = html || '<div style="color:var(--muted)">No players found</div>';
+      grid.innerHTML = html || '<div class="meta">No players found</div>';
     }
 
-    function renderTopList(){
+    function renderTopList() {
       const top = document.getElementById('top-list');
       const topPlayers = players.slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists)).slice(0,8);
       top.innerHTML = topPlayers.map((p,i)=>`
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;gap:10px;align-items:center">
-            <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#ff8a65,#ffb86b);display:flex;align-items:center;justify-content:center;font-weight:700">${i+1}</div>
-            <div>
-              <div style="font-weight:700">${p.name}</div>
-              <div style="font-size:12px;color:var(--muted)">G ${p.goals} • A ${p.assists}</div>
-            </div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div><strong>${i+1}. ${p.name}</strong><div class="meta">G ${p.goals} • A ${p.assists}</div></div>
           <div style="font-weight:700;color:var(--accent)">${p.goals + p.assists}</div>
         </div>
-      `).join('');
+      `).join('') || '<div class="meta">No top scorers</div>';
     }
 
-    function attachSearch(){
-      const s = document.getElementById('search');
-      if(!s) return;
-      s.addEventListener('input', ()=> renderPlayersGrid());
+    function attachSearch() {
+      const s = document.getElementById('searchInput');
+      if (!s) return;
+      s.addEventListener('input', () => renderPlayersGrid());
     }
 
-    // ---------- Init ----------
+    // Theme toggle (keeps existing style.css dark mode)
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'themeToggle') {
+        document.body.classList.toggle('dark');
+      }
+    });
+
+    // Init
     let players = [];
     loadDataFiles();
   </script>
