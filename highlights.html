@@ -3,72 +3,80 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF Stats – Highlights</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>TNF Stats — Highlights</title>
+  <style>
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:#071026;color:#eaf2ff;padding:28px}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{margin:0}
+    .week-list{display:grid;gap:12px}
+    .week-card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .week-card h3{margin:0 0 8px 0}
+    .links a{display:inline-block;margin-right:10px;color:#ffd9a8;text-decoration:none}
+    .meta{color:#9aa4b2;font-size:13px}
+    footer{margin-top:20px;color:#9aa4b2;text-align:center}
+  </style>
 </head>
-
 <body>
-  <header>
-    <h1>Highlights</h1>
-  </header>
+  <div class="wrap">
+    <header>
+      <h1>Highlights</h1>
+      <div class="meta">Auto‑merged weeks view</div>
+    </header>
 
-  <main>
-    <div id="highlights-list"></div>
-  </main>
+    <div id="highlights-list" class="week-list"></div>
 
-  <footer>
-    <small>© TNF Stats</small>
-  </footer>
+    <footer>© TNF Stats</footer>
+  </div>
 
   <script>
-    window.__FALLBACK_WEEKS = {};
+    function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
 
-    async function loadDataFiles() {
-      async function tryFetch(url) {
-        try {
-          const res = await fetch(url, { cache: 'no-store' });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return await res.json();
-        } catch (err) {
-          console.warn('Could not fetch', url, err);
-          return null;
+    async function loadData(){
+      try{
+        const res = await fetch('data/weeks.json',{cache:'no-store'});
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const weeks = await res.json();
+        const mergedWeeks = {};
+        for(const [wk,obj] of Object.entries(weeks)){
+          const merged = {};
+          (obj.players||[]).forEach(r=>{
+            const name = titleCase(r.name||'');
+            if(!name) return;
+            if(!merged[name]) merged[name] = { name, goals:0, assists:0 };
+            merged[name].goals += Number(r.goals||0);
+            merged[name].assists += Number(r.assists||0);
+          });
+          mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
         }
+        render(mergedWeeks);
+      }catch(e){
+        console.warn('Could not load weeks', e);
+        document.getElementById('highlights-list').innerHTML = '<div style="color:#9aa4b2">No highlights available</div>';
       }
-
-      const weeksJson = await tryFetch('data/weeks.json');
-      const weeksData = weeksJson || window.__FALLBACK_WEEKS;
-
-      const mergedWeeks = {};
-      for (const [wk, obj] of Object.entries(weeksData)) {
-        const merged = {};
-        (obj.players || []).forEach(r => {
-          const name = r.name.trim().toUpperCase();
-          if (!merged[name]) merged[name] = { name, goals: 0, assists: 0 };
-          merged[name].goals += Number(r.goals || 0);
-          merged[name].assists += Number(r.assists || 0);
-        });
-        mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
-      }
-
-      weeks = mergedWeeks;
-      renderHighlights();
     }
 
-    function renderHighlights() {
+    function render(weeks){
       const container = document.getElementById('highlights-list');
-      container.innerHTML = Object.entries(weeks)
-        .map(([wk, data]) => `
+      const html = Object.entries(weeks).sort((a,b)=> a[0].localeCompare(b[0])).reverse().map(([wk,data])=>{
+        const date = data.date ? `<div class="meta">${data.date}</div>` : '';
+        const players = (data.players||[]).slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists)).slice(0,6).map(p=>`${p.name} (${p.goals}G ${p.assists}A)`).join(', ');
+        return `
           <div class="week-card">
-            <h3>${wk} — ${data.date}</h3>
-            ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Watch Highlights</a><br>` : ""}
-            ${data.fullVideoUrl ? `<a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ""}
+            <h3>${wk} ${data.title ? '— ' + data.title : ''}</h3>
+            ${date}
+            <div style="margin-top:8px" class="links">
+              ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Highlights</a>` : ''}
+              ${data.fullVideoUrl ? `<a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ''}
+            </div>
+            ${players ? `<div style="margin-top:10px" class="meta">Top: ${players}</div>` : ''}
           </div>
-        `)
-        .join('');
+        `;
+      }).join('');
+      container.innerHTML = html || '<div style="color:#9aa4b2">No highlights yet</div>';
     }
 
-    let weeks = {};
-    loadDataFiles();
+    loadData();
   </script>
 </body>
 </html>
