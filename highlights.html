@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF Stats — Highlights</title>
+  <title>TNF — Highlights</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <div class="header-top">
       <div>
-        <h1>Highlights</h1>
-        <div style="font-size:13px;color:var(--text-muted)">Auto‑merged weeks view</div>
+        <h1>TNF — Highlights</h1>
+        <div style="font-size:13px;color:var(--text-muted)">Daily highlights and full match links</div>
       </div>
       <div>
         <button id="themeToggle">Toggle theme</button>
@@ -20,68 +20,72 @@
   </header>
 
   <main>
-    <section id="highlights-list"></section>
+    <section>
+      <h2 id="week-title">WEEK-LATEST</h2>
+      <div id="week-date" class="meta"></div>
+      <div id="week-contrib" style="margin-top:8px" class="meta"></div>
+    </section>
+
+    <section>
+      <h3>Highlights</h3>
+      <div id="highlights-area"></div>
+    </section>
+
+    <section>
+      <h3>Goalscorers</h3>
+      <div id="goals-list"></div>
+    </section>
+
+    <section>
+      <h3>Assists</h3>
+      <div id="assists-list"></div>
+    </section>
   </main>
 
-  <footer>
-    <small>© TNF Stats</small>
-  </footer>
+  <footer><small>© TNF Stats</small></footer>
 
   <script>
     function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
 
-    async function loadData(){
+    async function loadHighlights(){
       try{
-        const res = await fetch('data/weeks.json',{cache:'no-store'});
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const weeks = await res.json();
-        const mergedWeeks = {};
-        for(const [wk,obj] of Object.entries(weeks)){
-          const merged = {};
-          (obj.players||[]).forEach(r=>{
-            const name = titleCase(r.name||'');
-            if(!name) return;
-            if(!merged[name]) merged[name] = { name, goals:0, assists:0 };
-            merged[name].goals += Number(r.goals||0);
-            merged[name].assists += Number(r.assists||0);
-          });
-          mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
-        }
-        render(mergedWeeks);
+        const r = await fetch('data/weeks.json',{cache:'no-store'});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const weeks = await r.json();
+        // pick latest week by key sort (assuming WEEK-LATEST or last key)
+        const keys = Object.keys(weeks).sort();
+        const latestKey = keys[keys.length-1] || 'WEEK-LATEST';
+        const data = weeks[latestKey] || {};
+        // merge duplicates
+        const merged = {};
+        (data.players||[]).forEach(p=>{
+          const n = titleCase(p.name||'');
+          if(!n) return;
+          if(!merged[n]) merged[n] = { name:n, goals:0, assists:0 };
+          merged[n].goals += Number(p.goals||0);
+          merged[n].assists += Number(p.assists||0);
+        });
+        const players = Object.values(merged);
+        document.getElementById('week-title').textContent = latestKey;
+        document.getElementById('week-date').textContent = data.date || '';
+        const total = players.reduce((s,p)=> s + p.goals + p.assists, 0);
+        document.getElementById('week-contrib').textContent = 'Total contributions: ' + total;
+
+        document.getElementById('highlights-area').innerHTML = data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Highlights</a> ${data.fullVideoUrl? ' | <a href="'+data.fullVideoUrl+'" target="_blank">Full Match</a>':''}` : '<div class="meta">No highlights</div>';
+
+        const goals = players.filter(p=>p.goals>0).sort((a,b)=>b.goals-a.goals);
+        const assists = players.filter(p=>p.assists>0).sort((a,b)=>b.assists-a.assists);
+
+        document.getElementById('goals-list').innerHTML = goals.length ? goals.map(p=>`<div><strong>${p.name}</strong><div class="meta">G: ${p.goals}</div></div>`).join('') : '<div class="meta">No goals</div>';
+        document.getElementById('assists-list').innerHTML = assists.length ? assists.map(p=>`<div><strong>${p.name}</strong><div class="meta">A: ${p.assists}</div></div>`).join('') : '<div class="meta">No assists</div>';
       }catch(e){
-        console.warn('Could not load weeks', e);
-        document.getElementById('highlights-list').innerHTML = '<div class="meta">No highlights available</div>';
+        console.warn(e);
+        document.getElementById('highlights-area').innerHTML = '<div class="meta">No highlights available</div>';
       }
     }
 
-    function render(weeks){
-      const container = document.getElementById('highlights-list');
-      const html = Object.entries(weeks).sort((a,b)=> a[0].localeCompare(b[0])).reverse().map(([wk,data])=>{
-        const date = data.date ? `<div class="meta">${data.date}</div>` : '';
-        const players = (data.players||[]).slice().sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists)).slice(0,6).map(p=>`${p.name} (${p.goals}G ${p.assists}A)`).join(', ');
-        return `
-          <div class="week-block">
-            <div class="week-header"><span>${wk}</span><span>${data.title || ''}</span></div>
-            <div class="week-body">
-              ${date}
-              <div style="margin-top:8px">
-                ${data.videoUrl ? `<a href="${data.videoUrl}" target="_blank">Highlights</a>` : ''}
-                ${data.fullVideoUrl ? ` <a href="${data.fullVideoUrl}" target="_blank">Full Match</a>` : ''}
-              </div>
-              ${players ? `<div style="margin-top:8px" class="meta">Top: ${players}</div>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-      container.innerHTML = html || '<div class="meta">No highlights yet</div>';
-    }
-
-    // Theme toggle
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'themeToggle') document.body.classList.toggle('dark');
-    });
-
-    loadData();
+    document.addEventListener('click', (e)=>{ if(e.target && e.target.id==='themeToggle') document.body.classList.toggle('dark'); });
+    loadHighlights();
   </script>
 </body>
 </html>
