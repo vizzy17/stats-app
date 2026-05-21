@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF Stats — Players</title>
+  <title>TNF — Players</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <div class="header-top">
       <div>
-        <h1>Players</h1>
+        <h1>TNF — Players</h1>
+        <div style="font-size:13px;color:var(--text-muted)">Player list and admin tools</div>
       </div>
       <div>
         <button id="themeToggle">Toggle theme</button>
@@ -20,89 +21,116 @@
 
   <main>
     <section>
+      <h2>Players</h2>
+      <div class="meta">Total players: <span id="total-players">—</span></div>
       <input id="searchInput" placeholder="Filter players by name" />
     </section>
 
     <section>
-      <div id="players-grid"></div>
+      <div id="players-list"></div>
+    </section>
+
+    <section id="adminPanel">
+      <h3>Upload receipt</h3>
+      <div class="admin-row">
+        <input id="uploadName" placeholder="Player name" />
+        <input id="uploadAmount" placeholder="£" />
+        <button id="uploadBtn">Upload</button>
+      </div>
+      <div id="adminMsg" class="meta">No receipts uploaded yet.</div>
+
+      <h3 style="margin-top:12px">Slot release</h3>
+      <div class="meta">First 32 can release slot until Wednesday 12:00 UK.</div>
+      <div class="admin-row">
+        <input id="releaseName" placeholder="Player name to release" />
+        <button id="releaseBtn">Release</button>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <small>© TNF Stats</small>
-  </footer>
+  <footer><small>© TNF Stats</small></footer>
 
   <script>
     function titleCase(s){ return String(s||'').trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase() : '').join(' '); }
 
-    async function loadDataFiles(){
-      async function tryFetch(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }catch(e){console.warn('fetch',url,e);return null;} }
-      const [playersJson, weeksJson] = await Promise.all([ tryFetch('data/players.json'), tryFetch('data/weeks.json') ]);
-      const weeksData = weeksJson || {};
+    async function loadPlayers(){
+      try{
+        const [playersJson, weeksJson] = await Promise.all([
+          fetch('data/players.json',{cache:'no-store'}).then(r=> r.ok? r.json(): null).catch(()=>null),
+          fetch('data/weeks.json',{cache:'no-store'}).then(r=> r.ok? r.json(): null).catch(()=>null)
+        ]);
+        const weeks = weeksJson || {};
+        // merge weeks
+        const mergedWeeks = {};
+        for(const [wk,obj] of Object.entries(weeks)){
+          const merged = {};
+          (obj.players||[]).forEach(r=>{
+            const n = titleCase(r.name||'');
+            if(!n) return;
+            if(!merged[n]) merged[n] = { name:n, goals:0, assists:0 };
+            merged[n].goals += Number(r.goals||0);
+            merged[n].assists += Number(r.assists||0);
+          });
+          mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
+        }
 
-      const mergedWeeks = {};
-      for(const [wk,obj] of Object.entries(weeksData)){
-        const merged = {};
-        (obj.players||[]).forEach(r=>{
-          const name = titleCase(r.name||'');
-          if(!name) return;
-          if(!merged[name]) merged[name] = { name, goals:0, assists:0 };
-          merged[name].goals += Number(r.goals||0);
-          merged[name].assists += Number(r.assists||0);
-        });
-        mergedWeeks[wk] = { ...obj, players: Object.values(merged) };
-      }
-
-      const roster = new Map();
-      (playersJson||[]).forEach(p=>{
-        const n = titleCase(p.name||'');
-        if(!n) return;
-        roster.set(n, { name:n, goals:0, assists:0 });
-      });
-
-      for(const wk of Object.values(mergedWeeks)){
-        (wk.players||[]).forEach(p=>{
+        const roster = new Map();
+        (playersJson||[]).forEach(p=>{
           const n = titleCase(p.name||'');
           if(!n) return;
-          if(!roster.has(n)) roster.set(n, { name:n, goals:0, assists:0 });
-          const rec = roster.get(n);
-          rec.goals += Number(p.goals||0);
-          rec.assists += Number(p.assists||0);
+          roster.set(n, { name:n, goals:0, assists:0 });
         });
+
+        for(const wk of Object.values(mergedWeeks)){
+          (wk.players||[]).forEach(p=>{
+            const n = titleCase(p.name||'');
+            if(!n) return;
+            if(!roster.has(n)) roster.set(n, { name:n, goals:0, assists:0 });
+            const rec = roster.get(n);
+            rec.goals += Number(p.goals||0);
+            rec.assists += Number(p.assists||0);
+          });
+        }
+
+        const players = Array.from(roster.values()).sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists));
+        document.getElementById('total-players').textContent = players.length;
+        renderPlayers(players);
+
+        // search
+        document.getElementById('searchInput').addEventListener('input', (e)=>{
+          const q = e.target.value.trim().toLowerCase();
+          renderPlayers(players.filter(p=> !q || p.name.toLowerCase().includes(q)));
+        });
+
+        // admin buttons (no backend — just UI feedback)
+        document.getElementById('uploadBtn').onclick = ()=>{
+          const name = document.getElementById('uploadName').value.trim();
+          const amt = document.getElementById('uploadAmount').value.trim();
+          document.getElementById('adminMsg').textContent = name ? `Uploaded receipt for ${name} (£${amt||'0'})` : 'Enter player name';
+        };
+        document.getElementById('releaseBtn').onclick = ()=>{
+          const name = document.getElementById('releaseName').value.trim();
+          document.getElementById('adminMsg').textContent = name ? `${name} slot released` : 'Enter player name';
+        };
+
+      }catch(e){
+        console.warn(e);
+        document.getElementById('players-list').innerHTML = '<div class="meta">Could not load players</div>';
       }
-
-      players = Array.from(roster.values());
-      render();
-      attachFilter();
     }
 
-    function render(){
-      const grid = document.getElementById('players-grid');
-      const q = (document.getElementById('searchInput')?.value||'').trim().toLowerCase();
-      grid.innerHTML = players
-        .filter(p => !q || p.name.toLowerCase().includes(q))
-        .sort((a,b)=> (b.goals+b.assists)-(a.goals+a.assists))
-        .map(p=>`
-          <div class="player-card">
-            <strong class="playerName">${p.name}</strong>
-            <div class="meta">Goals: ${p.goals} • Assists: ${p.assists} • Total: ${p.goals + p.assists}</div>
-          </div>
-        `).join('') || '<div class="meta">No players</div>';
+    function renderPlayers(list){
+      const container = document.getElementById('players-list');
+      container.innerHTML = list.map(p=>`
+        <div class="player-card">
+          <strong>${p.name}</strong>
+          <div class="meta">G: ${p.goals} • A: ${p.assists}</div>
+        </div>
+      `).join('') || '<div class="meta">No players</div>';
     }
 
-    function attachFilter(){
-      const f = document.getElementById('searchInput');
-      if(!f) return;
-      f.addEventListener('input', ()=> render());
-    }
-
-    // Theme toggle
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'themeToggle') document.body.classList.toggle('dark');
-    });
-
-    let players = [];
-    loadDataFiles();
+    document.addEventListener('click', (e)=>{ if(e.target && e.target.id==='themeToggle') document.body.classList.toggle('dark'); });
+    loadPlayers();
   </script>
 </body>
 </html>
