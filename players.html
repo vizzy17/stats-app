@@ -1,179 +1,97 @@
+
+
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TNF — Players & Admin</title>
-<style>
-  :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882}
-  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-  .wrap{max-width:1100px;margin:24px auto;padding:18px}
-  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
-  .muted{color:var(--muted)}
-  .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
-  .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TNF League – Players</title>
+
+  <!-- Inline CSS preserved exactly as in index.html -->
+  <style>
+    :root{
+      --bg1:#37003C; --bg2:#0A1A2F; --muted:#A0A0A0; --card-bg:rgba(255,255,255,0.04);
+      --accent:#FF2882; --green:#00FF85; --neon:#00E6FF;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;}
+    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
+    .wrap{max-width:1100px;margin:20px auto;padding:18px}
+    .card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .muted{color:var(--muted)}
+    .flex{display:flex;align-items:center}
+    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:999}
+    .modal .box{background:#071226;padding:16px;border-radius:10px;width:100%;max-width:520px}
+  </style>
 </head>
+
 <body>
+
+  <!-- Top Navigation -->
+  <nav style="display:flex;gap:20px;padding:12px 18px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);position:sticky;top:0;z-index:50">
+    <a href="dashboard.html" style="color:#fff">Dashboard</a>
+    <a href="highlights.html" style="color:#fff">Highlights</a>
+    <a href="players.html" style="color:#fff;font-weight:700">Players</a>
+    <a href="admin.html" style="color:#fff">Admin</a>
+  </nav>
+
   <div class="wrap">
-    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div><div style="font-weight:700">TNF — Players</div><div class="muted">Player list and admin tools</div></div>
-      <nav style="display:flex;gap:8px"><a href="index.html" class="btn">Dashboard</a><a href="highlights.html" class="btn">Highlights</a><a href="players.html" class="btn">Players</a></nav>
+
+    <!-- Page Header -->
+    <header style="margin-bottom:12px">
+      <div style="font-weight:700;font-size:20px">Players</div>
+      <div class="muted" style="font-size:13px">Full roster with goals & assists</div>
     </header>
 
+    <!-- Players Grid -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-weight:700">Players</div>
-        <div class="muted">Total players: <span id="playersCount">0</span></div>
+        <div class="muted" style="font-size:13px">Total players: <span id="playersCount">0</span></div>
       </div>
       <div id="playersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
     </section>
 
-    <section class="card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
-          <div style="font-weight:600;margin-bottom:8px">Upload receipt</div>
-          <div style="display:flex;gap:8px">
-            <input id="receiptPlayer" placeholder="Player name" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <input id="receiptAmount" placeholder="£" style="width:80px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <input id="receiptFile" type="file" accept="image/*" style="display:none">
-            <button id="chooseFileBtn" class="btn">Choose</button>
-            <button id="uploadReceiptBtn" class="btn" style="background:var(--accent);color:#001">Upload</button>
-          </div>
-          <div id="receiptStatus" class="muted" style="margin-top:8px"></div>
-          <div id="paymentsLog" class="muted" style="margin-top:8px;max-height:120px;overflow:auto"></div>
-        </div>
+    <!-- Player Modal -->
+    <div id="playerModal" class="modal" role="dialog" aria-hidden="true">
+      <div class="box">
+        <div style="display:flex;gap:12px">
+          <img id="modalPhoto" src="" alt="" style="width:72px;height:72px;border-radius:8px;object-fit:cover">
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div id="modalName" style="font-weight:700"></div>
+                <div id="modalMeta" class="muted" style="font-size:13px"></div>
+              </div>
+              <button id="modalClose" class="btn">Close</button>
+            </div>
 
-        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
-          <div style="font-weight:600;margin-bottom:8px">Slot release</div>
-          <div class="muted" style="font-size:13px;margin-bottom:8px">First 32 can release slot until <strong>Wednesday 12:00 UK</strong>.</div>
-          <div style="display:flex;gap:8px">
-            <input id="releasePlayer" placeholder="Player name to release" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff">
-            <button id="releaseBtn" class="btn" style="background:#FFD166;color:#001">Release</button>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center">
+              <div>
+                <div class="muted" style="font-size:12px">Goals</div>
+                <div id="modalGoals" style="font-weight:700;font-size:18px">0</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size:12px">Assists</div>
+                <div id="modalAssists" style="font-weight:700;font-size:18px">0</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size:12px">Total</div>
+                <div id="modalTotal" style="font-weight:700;font-size:18px">0</div>
+              </div>
+            </div>
+
+            <div id="modalExtra" class="muted" style="margin-top:10px;font-size:13px"></div>
           </div>
-          <div id="releaseStatus" class="muted" style="margin-top:8px"></div>
         </div>
       </div>
-    </section>
+    </div>
+
   </div>
 
-<script>
-/*
-  Players page JS (refactored)
-  - Loads data/players.json and data/weeks.json safely
-  - Normalizes names, merges duplicates in weeks
-  - Auto-adds players found in weeks to roster
-  - Recalculates totals from weeks (authoritative)
-  - Preserves UI and event hooks
-*/
-(async function(){
-  function normalizeName(raw){ if(!raw && raw!=='') return ''; return String(raw).trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase():'').join(' '); }
-  function keyName(raw){ return String(raw||'').trim().toLowerCase(); }
-  async function safeLoadJSON(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }catch(e){ console.warn('safeLoadJSON',url,e); return null; } }
+  <!-- JS Modules -->
+  <script src="scripts/common.js"></script>
+  <script src="scripts/players.js"></script>
 
-  const fallbackPlayers = [{name:"MUYI"},{name:"Okky"},{name:"Hassan"},{name:"Hebro"},{name:"Abeey"},{name:"Oreke"},{name:"Pappy"},{name:"Cattano"},{name:"Goke"}];
-  const fallbackWeeks = {
-    "WEEK-LATEST": { date: new Date().toISOString().split('T')[0], players:[{name:"MUYI",goals:1,assists:0},{name:"Okky",goals:1,assists:0},{name:"Hassan",goals:1,assists:0},{name:"Hebro",goals:1,assists:1},{name:"Abeey",goals:0,assists:1},{name:"Oreke",goals:1,assists:0},{name:"Pappy",goals:0,assists:1},{name:"Cattano",goals:1,assists:0},{name:"Goke",goals:1,assists:0}], videoUrl:"", fullVideoUrl:"" }
-  };
-
-  // Load data
-  const [playersJson, weeksJson] = await Promise.all([ safeLoadJSON('data/players.json'), safeLoadJSON('data/weeks.json') ]);
-  const playersSource = Array.isArray(playersJson) ? playersJson : fallbackPlayers;
-  const weeksSource = (weeksJson && typeof weeksJson === 'object') ? weeksJson : fallbackWeeks;
-
-  // Normalize and merge duplicates per week
-  const weeks = {};
-  for (const [wk, obj] of Object.entries(weeksSource)) {
-    const merged = {};
-    (obj.players || []).forEach(r => {
-      const n = normalizeName(r.name || '');
-      if (!n) return;
-      const k = keyName(n);
-      if (!merged[k]) merged[k] = { name: n, goals: 0, assists: 0 };
-      merged[k].goals += Number(r.goals || 0);
-      merged[k].assists += Number(r.assists || 0);
-    });
-    weeks[wk] = { ...obj, players: Object.values(merged) };
-  }
-
-  // Build roster from players.json and auto-add missing players from weeks
-  let roster = new Map();
-  (playersSource || []).forEach(p => {
-    const n = normalizeName(p.name || p || '');
-    if (!n) return;
-    roster.set(keyName(n), { name: n, goals: 0, assists: 0, total: 0 });
-  });
-  Object.values(weeks).forEach(wk => {
-    (wk.players || []).forEach(p => {
-      const n = normalizeName(p.name || '');
-      if (!n) return;
-      const k = keyName(n);
-      if (!roster.has(k)) roster.set(k, { name: n, goals: 0, assists: 0, total: 0 });
-    });
-  });
-
-  // Recalculate totals from weeks
-  const totals = {};
-  Object.values(weeks).forEach(wk => {
-    (wk.players || []).forEach(p => {
-      const n = normalizeName(p.name || '');
-      if (!n) return;
-      const k = keyName(n);
-      if (!totals[k]) totals[k] = { name: n, goals: 0, assists: 0 };
-      totals[k].goals += Number(p.goals || 0);
-      totals[k].assists += Number(p.assists || 0);
-    });
-  });
-  for (const [k, rec] of roster.entries()) {
-    const t = totals[k] || { goals: 0, assists: 0 };
-    rec.goals = t.goals;
-    rec.assists = t.assists;
-    rec.total = rec.goals + rec.assists;
-  }
-
-  let players = Array.from(roster.values()).sort((a,b)=> (b.total||0)-(a.total||0));
-
-  // Render players grid (preserve markup)
-  function renderPlayersGrid(list){
-    const grid=document.getElementById('playersGrid'); grid.innerHTML='';
-    (list || players).forEach(p=>{
-      const d=document.createElement('div');
-      d.style.padding='10px'; d.style.borderRadius='8px'; d.style.background='rgba(0,0,0,0.06)'; d.style.cursor='pointer';
-      d.innerHTML=`<div style="display:flex;gap:10px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><div style="font-weight:700">${p.name}</div><div class="muted" style="font-size:13px">G:${p.goals||0} • A:${p.assists||0}</div></div></div>`;
-      d.addEventListener('click',()=>alert(`${p.name}: G:${p.goals} A:${p.assists}`));
-      grid.appendChild(d);
-    });
-    document.getElementById('playersCount').textContent = (list || players).length;
-  }
-
-  // File upload and release handlers (preserve behavior)
-  document.getElementById('chooseFileBtn').addEventListener('click', ()=> document.getElementById('receiptFile').click());
-  document.getElementById('receiptFile').addEventListener('change', (e)=> { const f=e.target.files[0]; document.getElementById('receiptStatus').textContent = f?`Selected: ${f.name}`:''; });
-  document.getElementById('uploadReceiptBtn').addEventListener('click', ()=> {
-    const name=document.getElementById('receiptPlayer').value.trim(); const amount=Number(document.getElementById('receiptAmount').value)||0; const file=document.getElementById('receiptFile');
-    if(!name||amount<=0||!file.files[0]) return alert('Enter player, amount and choose a file');
-    const entry={name,amount,fileName:file.files[0].name,timestamp:new Date().toISOString(),status:'Pending'};
-    const log=document.getElementById('paymentsLog'); log.innerHTML = (log.innerHTML||'') + `<div>${entry.timestamp.split('T')[0]} — ${entry.name} — £${entry.amount} — <strong>${entry.status}</strong></div>`;
-    document.getElementById('receiptStatus').textContent='Receipt uploaded (pending verification)';
-    document.getElementById('receiptPlayer').value=''; document.getElementById('receiptAmount').value=''; file.value='';
-  });
-
-  document.getElementById('releaseBtn').addEventListener('click', ()=> {
-    const name=document.getElementById('releasePlayer').value.trim(); if(!name) return alert('Enter player name to release');
-    const now=new Date(); const london=new Date(now.toLocaleString('en-GB',{timeZone:'Europe/London'})); const lwDay=london.getDay(); const wednesday=new Date(london); const diff=(3-lwDay+7)%7; wednesday.setDate(london.getDate()+diff); wednesday.setHours(12,0,0,0);
-    if(london.getTime()>=wednesday.getTime()){ document.getElementById('releaseStatus').textContent='Release window closed (after Wednesday 12:00 UK).'; return; }
-    const idx=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase()); if(idx===-1){ document.getElementById('releaseStatus').textContent='Player not found in first 32.'; return; }
-    players.splice(idx,1); // update roster
-    document.getElementById('releaseStatus').textContent=`${name} released successfully.`; document.getElementById('releasePlayer').value='';
-    renderPlayersGrid();
-  });
-
-  // Expose for debugging
-  window.__TNF_PLAYERS = { players, weeks, renderPlayersGrid };
-
-  // Initial render
-  renderPlayersGrid();
-})();
-</script>
 </body>
 </html>
