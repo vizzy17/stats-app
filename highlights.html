@@ -1,96 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TNF — Highlights</title>
-<style>
-  :root{--bg1:#37003C;--bg2:#0A1A2F;--muted:#A0A0A0;--card:rgba(255,255,255,0.04);--accent:#FF2882}
-  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-  .wrap{max-width:1100px;margin:24px auto;padding:18px}
-  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px}
-  .muted{color:var(--muted)}
-  .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:transparent;color:#EDEDED;cursor:pointer}
-  .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,.03)}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TNF League – Highlights</title>
+
+  <!-- Inline CSS preserved exactly as in index.html -->
+  <style>
+    :root{
+      --bg1:#37003C; --bg2:#0A1A2F; --muted:#A0A0A0; --card-bg:rgba(255,255,255,0.04);
+      --accent:#FF2882; --green:#00FF85; --neon:#00E6FF;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;}
+    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
+    .wrap{max-width:1100px;margin:20px auto;padding:18px}
+    .card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .muted{color:var(--muted)}
+    .flex{display:flex;align-items:center}
+    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
+  </style>
 </head>
+
 <body>
+
+  <!-- Top Navigation -->
+  <nav style="display:flex;gap:20px;padding:12px 18px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);position:sticky;top:0;z-index:50">
+    <a href="dashboard.html" style="color:#fff">Dashboard</a>
+    <a href="highlights.html" style="color:#fff;font-weight:700">Highlights</a>
+    <a href="players.html" style="color:#fff">Players</a>
+    <a href="admin.html" style="color:#fff">Admin</a>
+  </nav>
+
   <div class="wrap">
-    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div><div style="font-weight:700">TNF — Highlights</div><div class="muted">Daily highlights and full match links</div></div>
-      <nav style="display:flex;gap:8px"><a href="index.html" class="btn">Dashboard</a><a href="highlights.html" class="btn">Highlights</a><a href="players.html" class="btn">Players</a></nav>
+
+    <!-- Page Header -->
+    <header style="margin-bottom:12px">
+      <div style="font-weight:700;font-size:20px">Weekly Highlights</div>
+      <div class="muted" style="font-size:13px">Goals, assists, and match links</div>
     </header>
 
-    <section id="weeksContainer"></section>
+    <!-- Weeks Section -->
+    <section id="weeksSection"></section>
+
   </div>
 
-<script>
-/*
-  Highlights page JS (refactored)
-  - Loads data/weeks.json safely
-  - Normalizes names and merges duplicates per week
-  - Renders weeks exactly like original markup
-  - Does NOT embed video iframes; shows safe links only
-*/
-(async function(){
-  function normalizeName(raw){ if(!raw && raw!=='') return ''; return String(raw).trim().replace(/\s+/g,' ').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1).toLowerCase():'').join(' '); }
-  function keyName(raw){ return String(raw||'').trim().toLowerCase(); }
-  async function safeLoadJSON(url){ try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }catch(e){ console.warn('safeLoadJSON',url,e); return null; } }
+  <!-- JS Modules -->
+  <script src="scripts/common.js"></script>
+  <script src="scripts/highlights.js"></script>
 
-  const fallback = {
-    "WEEK-LATEST": {
-      date: new Date().toISOString().split('T')[0],
-      players:[
-        {name:"MUYI",goals:1,assists:0},{name:"Okky",goals:1,assists:0},{name:"Hassan",goals:1,assists:0},
-        {name:"Hebro",goals:1,assists:1},{name:"Abeey",goals:0,assists:1},{name:"Oreke",goals:1,assists:0},
-        {name:"Pappy",goals:0,assists:1},{name:"Cattano",goals:1,assists:0},{name:"Goke",goals:1,assists:0}
-      ],
-      videoUrl:"https://www.youtube.com/embed/VIDEO_ID_HIGHLIGHTS",
-      fullVideoUrl:"https://youtu.be/VIDEO_ID_FULL"
-    },
-    "WEEK-PRIOR": { date:"2026-05-01", players:[{name:"Hassan",goals:2,assists:1},{name:"Goke",goals:1,assists:0}], videoUrl:"" }
-  };
-
-  const raw = await safeLoadJSON('data/weeks.json') || fallback;
-
-  // Normalize and merge duplicates per week
-  const weeks = {};
-  for(const [wk,obj] of Object.entries(raw)){
-    const merged = {};
-    (obj.players||[]).forEach(r=>{
-      const n = normalizeName(r.name||'');
-      if(!n) return;
-      const k = keyName(n);
-      if(!merged[k]) merged[k] = { name: n, goals: 0, assists: 0 };
-      merged[k].goals += Number(r.goals||0);
-      merged[k].assists += Number(r.assists||0);
-    });
-    weeks[wk] = { ...obj, players: Object.values(merged) };
-  }
-
-  // Render weeks (preserve original markup). No iframe embeds.
-  function renderWeeks(){
-    const container=document.getElementById('weeksContainer'); container.innerHTML='';
-    const keys=Object.keys(weeks).sort((a,b)=>Number(b.replace(/\D/g,''))-Number(a.replace(/\D/g,'')));
-    keys.forEach(k=>{
-      const w=weeks[k];
-      const total=(w.players||[]).reduce((s,p)=>s+Number(p.goals||0)+Number(p.assists||0),0);
-      const card=document.createElement('div'); card.className='card';
-      const goalsHtml=(w.players||[]).filter(p=>p.goals>0).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted">G: ${p.goals}</div></div></div>`).join('');
-      const assistsHtml=(w.players||[]).filter(p=>p.assists>0).map(p=>`<div style="display:flex;gap:8px;align-items:center"><img src="photos/${encodeURIComponent(p.name)}.jpg" class="small-photo" onerror="this.style.display='none'"><div><strong>${p.name}</strong><div class="muted">A: ${p.assists}</div></div></div>`).join('');
-      const fullLink = w.fullVideoUrl ? `<div style="margin-top:8px" class="muted">Full match: <a href="${w.fullVideoUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${w.fullVideoUrl}</a></div>` : '';
-      card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${k}</strong><div class="muted">${w.date}</div><div class="muted" style="margin-top:6px">Total contributions: <strong>${total}</strong></div></div><div class="muted">Highlights</div></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div><div style="font-weight:600">Goalscorers</div>${goalsHtml||'<div class="muted">No goals</div>'}</div><div><div style="font-weight:600">Assists</div>${assistsHtml||'<div class="muted">No assists</div>'}</div></div>
-        ${fullLink}`;
-      container.appendChild(card);
-    });
-  }
-
-  renderWeeks();
-
-  // Expose for debugging
-  window.__TNF_HIGHLIGHTS = { weeks };
-})();
-</script>
 </body>
 </html>
