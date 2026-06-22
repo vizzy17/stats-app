@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TNF League – Admin</title>
+
+  <!-- Inline CSS preserved exactly as in index.html -->
+  <style>
+    :root{
+      --bg1:#37003C; --bg2:#0A1A2F; --muted:#A0A0A0; --card-bg:rgba(255,255,255,0.04);
+      --accent:#FF2882; --green:#00FF85; --neon:#00E6FF;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;}
+    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
+    .wrap{max-width:1100px;margin:20px auto;padding:18px}
+    .card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .muted{color:var(--muted)}
+    .flex{display:flex;align-items:center}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#EDEDED;cursor:pointer}
+    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:999}
+    .modal .box{background:#071226;padding:16px;border-radius:10px;width:100%;max-width:520px}
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Navigation -->
+  <nav style="display:flex;gap:20px;padding:12px 18px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);position:sticky;top:0;z-index:50">
+    <a href="dashboard.html" style="color:#fff">Dashboard</a>
+    <a href="highlights.html" style="color:#fff">Highlights</a>
+    <a href="players.html" style="color:#fff">Players</a>
+    <a href="admin.html" style="color:#fff;font-weight:700">Admin</a>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- Page Header -->
+    <header style="margin-bottom:12px">
+      <div style="font-weight:700;font-size:20px">Admin Panel</div>
+      <div class="muted" style="font-size:13px">Receipts, payments, slot release, team publishing</div>
+    </header>
+
+    <!-- Receipts & Slot Release -->
+    <section class="card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+
+        <!-- Upload Receipt -->
+        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
+          <div style="font-weight:600;margin-bottom:8px">Upload receipt</div>
+          <div style="display:flex;gap:8px">
+            <input id="receiptPlayer" placeholder="Player name"
+                   style="flex:1;padding:8px;border-radius:8px;background:transparent;
+                   border:1px solid rgba(255,255,255,0.04);color:#fff">
+
+            <input id="receiptAmount" placeholder="£"
+                   style="width:80px;padding:8px;border-radius:8px;background:transparent;
+                   border:1px solid rgba(255,255,255,0.04);color:#fff">
+
+            <input id="receiptFile" type="file" accept="image/*" style="display:none">
+
+            <button id="chooseFileBtn" class="btn">Choose</button>
+            <button id="uploadReceiptBtn" class="btn"
+                    style="background:var(--accent);color:#001">Upload</button>
+          </div>
+
+          <div id="receiptStatus" class="muted" style="margin-top:8px;font-size:13px"></div>
+          <div id="paymentsLog" class="muted"
+               style="margin-top:8px;font-size:13px;max-height:120px;overflow:auto"></div>
+        </div>
+
+        <!-- Slot Release -->
+        <div style="padding:10px;background:rgba(0,0,0,0.06);border-radius:8px">
+          <div style="font-weight:600;margin-bottom:8px">Slot release</div>
+          <div class="muted" style="font-size:13px;margin-bottom:8px">
+            First 32 can release slot until <strong>Wednesday 12:00 UK</strong>.
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <input id="releasePlayer" placeholder="Player name to release"
+                   style="flex:1;padding:8px;border-radius:8px;background:transparent;
+                   border:1px solid rgba(255,255,255,0.04);color:#fff">
+
+            <button id="releaseBtn" class="btn"
+                    style="background:#FFD166;color:#001">Release</button>
+          </div>
+
+          <div id="releaseStatus" class="muted"
+               style="margin-top:8px;font-size:13px"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Publish Teams -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>Publish Selected Teams</strong>
+          <div class="muted" style="font-size:12px">Top 32 + reserves</div>
+        </div>
+
+        <button id="publishSelectedBtn" class="btn"
+                style="background:var(--green);color:#001">
+          Publish Selected Teams
+        </button>
+      </div>
+
+      <div id="selectedTeamsPreview"
+           style="margin-top:12px;font-size:13px"
+           class="muted">
+        No teams published
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JS Modules -->
+  <script src="scripts/common.js"></script>
+  <script src="scripts/admin.js"></script>
+
+</body>
+</html>
