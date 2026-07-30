@@ -237,5 +237,19 @@
     ],
     "videoUrl": "https://youtu.be/4LtQlaGRS2c",
     "fullVideoUrl": "https://youtu.be/-FyYYVUURt4"
+  },
+
+  "WEEK27": {
+    "date": "2026-07-23",
+    "players": [
+      { "name": "Seunpresido", "goals": 1, "assists": 0 },
+      { "name": "Shola", "goals": 1, "assists": 0 },
+      { "name": "Hebro", "goals": 1, "assists": 1 },
+      { "name": "Hassan", "goals": 2, "assists": 0 },
+      { "name": "Olawale", "goals": 3, "assists": 0 },
+      { "name": "Teejay", "goals": 0, "assists": 3 }
+    ],
+    "videoUrl": "https://youtu.be/kxfHKduTEZ0",
+    "fullVideoUrl": "https://youtu.be/_FHaGmzJFCg"
   }
 }
