@@ -251,5 +251,19 @@
     ],
     "videoUrl": "https://youtu.be/kxfHKduTEZ0",
     "fullVideoUrl": "https://youtu.be/_FHaGmzJFCg"
-  }
+  },
+
+  "WEEK28": {
+    "date": "2026-07-30",
+    "players": [
+      { "name": "Olayinka", "goals": 1, "assists": 0 },
+      { "name": "Olowo", "goals": 1, "assists": 0 },
+      { "name": "Hammed Small", "goals": 3, "assists": 0 },
+      { "name": "Sly", "goals": 3, "assists": 1 },
+      { "name": "Olawale", "goals": 1, "assists": 0 },
+      { "name": "Hassan", "goals": 2, "assists": 0 },
+      { "name": "Lati", "goals": 2, "assists": 0  }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": ""
 }
