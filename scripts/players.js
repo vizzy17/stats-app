@@ -4,23 +4,53 @@
 
   let players = [];
 
+  // Load players
   try {
     const data = await loadData();
     players = data.players;
+    renderPlayerGrid();
   } catch (err) {
     console.error("Players page load error", err);
   }
+
+  ////////////////////////////////
+  // PLAYER GRID (PICTURES)
+  ////////////////////////////////
+
+  function renderPlayerGrid() {
+    const area = document.querySelector("#playerGrid");
+
+    area.innerHTML = players
+      .map(p => `
+        <div class="playerCard" onclick="selectPlayer('${p.name}')">
+          <img src="photos/${p.name}.jpg" 
+               onerror="this.src='photos/${p.name}.png'" 
+               class="playerPhoto">
+          <div class="playerName">${p.name}</div>
+        </div>
+      `)
+      .join("");
+  }
+
+  window.selectPlayer = function(name) {
+    sessionStorage.setItem("selectedPlayer", name);
+
+    document.querySelector("#openReportModal").style.display = "block";
+    document.querySelector("#openConfirmModal").style.display = "block";
+
+    alert(name + " selected");
+  };
+
+  ////////////////////////////////
+  // REPORT MODAL
+  ////////////////////////////////
 
   const modal = document.querySelector("#reportModal");
   const openBtn = document.querySelector("#openReportModal");
   const closeBtn = document.querySelector("#closeReportModal");
 
-  const confirmModal = document.querySelector("#confirmModal");
-  const openConfirmBtn = document.querySelector("#openConfirmModal");
-  const closeConfirmBtn = document.querySelector("#closeConfirmModal");
-
   openBtn.addEventListener("click", () => {
-    const playerName = sessionStorage.getItem("selectedPlayer") || players[0]?.name || "";
+    const playerName = sessionStorage.getItem("selectedPlayer") || "";
     document.querySelector("#reportPlayerName").value = playerName;
     populateConfirmingPlayers(playerName);
     modal.style.display = "flex";
@@ -44,6 +74,10 @@
     });
   }
 
+  ////////////////////////////////
+  // SUBMIT REPORT
+  ////////////////////////////////
+
   document.querySelector("#submitReportBtn").addEventListener("click", async () => {
     const player = document.querySelector("#reportPlayerName").value;
     const goals = Number(document.querySelector("#reportGoals").value);
@@ -60,7 +94,7 @@
     }
 
     const newReport = {
-      week: "WEEK-LATEST", // you can replace with actual current week key
+      week: "WEEK-LATEST",
       player,
       team: playerRecord.team || "A",
       goals,
@@ -77,8 +111,16 @@
     modal.style.display = "none";
   });
 
+  ////////////////////////////////
+  // CONFIRMATION MODAL
+  ////////////////////////////////
+
+  const confirmModal = document.querySelector("#confirmModal");
+  const openConfirmBtn = document.querySelector("#openConfirmModal");
+  const closeConfirmBtn = document.querySelector("#closeConfirmModal");
+
   openConfirmBtn.addEventListener("click", async () => {
-    const playerName = sessionStorage.getItem("selectedPlayer") || players[0]?.name || "";
+    const playerName = sessionStorage.getItem("selectedPlayer") || "";
     await loadConfirmations(playerName);
     confirmModal.style.display = "flex";
   });
@@ -114,6 +156,10 @@
       .join("");
   }
 
+  ////////////////////////////////
+  // CONFIRM REPORT
+  ////////////////////////////////
+
   window.confirmReport = async function(index, playerName) {
     const reports = await loadReports();
     const pendingForPlayer = reports.pending.filter(
@@ -135,6 +181,10 @@
 
     loadConfirmations(playerName);
   };
+
+  ////////////////////////////////
+  // REJECT REPORT
+  ////////////////////////////////
 
   window.rejectReport = async function(index, playerName) {
     const reports = await loadReports();
