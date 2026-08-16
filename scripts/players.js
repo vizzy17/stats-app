@@ -1,131 +1,162 @@
-/* players.js — TNF Players Page Logic
-   Requires: common.js (for loadData, normalizeName, keyName, etc.)
-*/
+/* players.js — TNF Players Page */
 
-(async function(){
+(async function() {
 
-  // --- State ---
   let players = [];
-  let weeks = {};
 
-  // --- Render Players Grid ---
-  function renderPlayersGrid() {
-    try {
-      const grid = document.querySelector('#playersGrid');
-      if (!grid) return;
-
-      grid.innerHTML = '';
-
-      players.forEach(p => {
-        const div = document.createElement('div');
-        div.style.padding = '10px';
-        div.style.borderRadius = '8px';
-        div.style.background = 'rgba(0,0,0,0.06)';
-        div.style.cursor = 'pointer';
-
-        div.innerHTML = `
-          <div style="display:flex;gap:10px;align-items:center">
-            <img src="photos/${encodeURIComponent(p.name)}.jpg"
-                 class="small-photo"
-                 onerror="this.style.display='none'">
-            <div>
-              <div style="font-weight:700">${p.name}</div>
-              <div class="muted" style="font-size:13px">
-                G:${p.goals || 0} • A:${p.assists || 0}
-              </div>
-            </div>
-          </div>
-        `;
-
-        div.addEventListener('click', () => openModal(p));
-        grid.appendChild(div);
-      });
-
-      const countEl = document.querySelector('#playersCount');
-      if (countEl) countEl.textContent = players.length;
-
-    } catch (err) {
-      console.error('renderPlayersGrid error', err);
-    }
+  try {
+    const data = await loadData();
+    players = data.players;
+  } catch (err) {
+    console.error("Players page load error", err);
   }
 
-  // --- Modal ---
-  function openModal(p) {
-    try {
-      document.querySelector('#modalName').textContent = p.name;
-      document.querySelector('#modalGoals').textContent = p.goals || 0;
-      document.querySelector('#modalAssists').textContent = p.assists || 0;
-      document.querySelector('#modalTotal').textContent = p.total || 0;
+  const modal = document.querySelector("#reportModal");
+  const openBtn = document.querySelector("#openReportModal");
+  const closeBtn = document.querySelector("#closeReportModal");
 
-      const mp = document.querySelector('#modalPhoto');
-      if (mp) mp.src = `photos/${encodeURIComponent(p.name)}.jpg`;
+  const confirmModal = document.querySelector("#confirmModal");
+  const openConfirmBtn = document.querySelector("#openConfirmModal");
+  const closeConfirmBtn = document.querySelector("#closeConfirmModal");
 
-      const modal = document.querySelector('#playerModal');
-      if (modal) modal.style.display = 'flex';
+  openBtn.addEventListener("click", () => {
+    const playerName = sessionStorage.getItem("selectedPlayer") || players[0]?.name || "";
+    document.querySelector("#reportPlayerName").value = playerName;
+    populateConfirmingPlayers(playerName);
+    modal.style.display = "flex";
+  });
 
-    } catch (err) {
-      console.error('openModal error', err);
-    }
-  }
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
 
-  const closeBtn = document.querySelector('#modalClose');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      const m = document.querySelector('#playerModal');
-      if (m) m.style.display = 'none';
-    });
-  }
-
-  // --- Compute Totals (from weeks) ---
-  function computeTotals() {
-    const lookup = {};
+  function populateConfirmingPlayers(excludeName) {
+    const select = document.querySelector("#reportConfirmBy");
+    select.innerHTML = "";
 
     players.forEach(p => {
-      lookup[keyName(p.name)] = {
-        name: normalizeName(p.name),
-        goals: 0,
-        assists: 0
-      };
-    });
-
-    Object.values(weeks).forEach(w => {
-      (w.players || []).forEach(r => {
-        const name = normalizeName(r.name || '');
-        if (!name) return;
-
-        const k = keyName(name);
-        if (!lookup[k]) {
-          lookup[k] = { name, goals: 0, assists: 0 };
-        }
-
-        lookup[k].goals += Number(r.goals || 0);
-        lookup[k].assists += Number(r.assists || 0);
-      });
-    });
-
-    players = Object.keys(lookup).map(k => {
-      const p = lookup[k];
-      return {
-        name: p.name,
-        goals: p.goals,
-        assists: p.assists,
-        total: p.goals + p.assists
-      };
+      if (p.name !== excludeName) {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      }
     });
   }
 
-  // --- Boot ---
-  try {
-    const data = await loadData();   // from common.js
-    players = data.players;
-    weeks = data.weeks;
+  document.querySelector("#submitReportBtn").addEventListener("click", async () => {
+    const player = document.querySelector("#reportPlayerName").value;
+    const goals = Number(document.querySelector("#reportGoals").value);
+    const assists = Number(document.querySelector("#reportAssists").value);
+    const confirmBy = document.querySelector("#reportConfirmBy").value;
+    const pin = document.querySelector("#reportPIN").value;
 
-    computeTotals();
-    renderPlayersGrid();
+    const reports = await loadReports();
+    const playerRecord = players.find(p => p.name === player);
 
-    console.info('Players page loaded.');
-  } catch (err) {
-    console.error('Players boot error', err);
+    if (!playerRecord || playerRecord.pin !== pin) {
+      alert("Incorrect PIN");
+      return;
+    }
+
+    const newReport = {
+      week: "WEEK-LATEST", // you can replace with actual current week key
+      player,
+      team: playerRecord.team || "A",
+      goals,
+      assists,
+      confirmedBy: confirmBy,
+      status: "pending",
+      timestamp: new Date().toISOString()
+    };
+
+    reports.pending.push(newReport);
+    downloadJSON(reports, "reports.json");
+
+    alert("Report submitted. Admin will review it.");
+    modal.style.display = "none";
+  });
+
+  openConfirmBtn.addEventListener("click", async () => {
+    const playerName = sessionStorage.getItem("selectedPlayer") || players[0]?.name || "";
+    await loadConfirmations(playerName);
+    confirmModal.style.display = "flex";
+  });
+
+  closeConfirmBtn.addEventListener("click", () => {
+    confirmModal.style.display = "none";
+  });
+
+  async function loadConfirmations(playerName) {
+    const reports = await loadReports();
+    const area = document.querySelector("#confirmList");
+
+    const pendingForPlayer = reports.pending.filter(
+      r => r.confirmedBy === playerName
+    );
+
+    if (!pendingForPlayer.length) {
+      area.innerHTML = "<div>No reports awaiting your confirmation.</div>";
+      return;
+    }
+
+    area.innerHTML = pendingForPlayer
+      .map((r, i) => `
+        <div>
+          <strong>${r.player}</strong> reported:
+          <br>Goals: ${r.goals}, Assists: ${r.assists}
+          <br><small>${r.timestamp.split("T")[0]}</small>
+          <br>
+          <button class="confirmActionBtn confirmYes" onclick="confirmReport(${i}, '${playerName}')">Confirm</button>
+          <button class="confirmActionBtn confirmNo" onclick="rejectReport(${i}, '${playerName}')">Reject</button>
+        </div>
+      `)
+      .join("");
   }
+
+  window.confirmReport = async function(index, playerName) {
+    const reports = await loadReports();
+    const pendingForPlayer = reports.pending.filter(
+      r => r.confirmedBy === playerName
+    );
+
+    const report = pendingForPlayer[index];
+
+    report.status = "confirmed";
+    reports.confirmed.push(report);
+
+    const originalIndex = reports.pending.findIndex(
+      r => r.timestamp === report.timestamp
+    );
+    reports.pending.splice(originalIndex, 1);
+
+    downloadJSON(reports, "reports.json");
+    alert("Report confirmed. Admin will review it.");
+
+    loadConfirmations(playerName);
+  };
+
+  window.rejectReport = async function(index, playerName) {
+    const reports = await loadReports();
+    const pendingForPlayer = reports.pending.filter(
+      r => r.confirmedBy === playerName
+    );
+
+    const report = pendingForPlayer[index];
+
+    report.status = "rejected";
+    reports.rejected = reports.rejected || [];
+    reports.rejected.push(report);
+
+    const originalIndex = reports.pending.findIndex(
+      r => r.timestamp === report.timestamp
+    );
+    reports.pending.splice(originalIndex, 1);
+
+    downloadJSON(reports, "reports.json");
+    alert("Report rejected.");
+
+    loadConfirmations(playerName);
+  };
 
 })();
