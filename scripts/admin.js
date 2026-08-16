@@ -11,7 +11,7 @@
   //////////////////////////////
   // Admin Authentication
   //////////////////////////////
-  const ADMIN_PASSWORD = "TNF2026ADMIN"; // change this to your secret
+  const ADMIN_PASSWORD = "AdeogunSecret2026"; // change this to your secret
 
   document.querySelector("#adminLoginBtn").addEventListener("click", () => {
     const input = document.querySelector("#adminPasscode").value.trim();
