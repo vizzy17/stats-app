@@ -92,7 +92,7 @@ async function loadData() {
   const base = detectBasePath();
   const version = Date.now(); // cache‑buster
 
-  const playersURL = `${base}/data/players.json?v=${version}`;
+  const playersURL = `${base}/data/players-data.json?v=${version}`;
   const weeksURL   = `${base}/data/weeks.json?v=${version}`;
 
   const [p, w] = await Promise.all([
