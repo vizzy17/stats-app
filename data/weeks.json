@@ -262,8 +262,49 @@
       { "name": "Hammed Small", "goals": 3, "assists": 0 },
       { "name": "Sly", "goals": 3, "assists": 1 },
       { "name": "Olawale", "goals": 1, "assists": 0 },
+      { "name": "Gbemmy", "goals": 1, "assists": 1 },
       { "name": "Hassan", "goals": 2, "assists": 0 },
       { "name": "Lati", "goals": 2, "assists": 0  }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": ""
+
+          },
+
+  "WEEK29": {
+    "date": "2026-08-06",
+    "players": [
+      { "name": "Shola", "goals": 1, "assists": 0 },
+      { "name": "Goke", "goals": 0, "assists": 1 },
+      { "name": "MD", "goals": 1, "assists": 0 },
+      { "name": "Ahmed", "goals": 0, "assists": 1 },
+      { "name": "cattano", "goals": 1, "assists": 0 },
+      { "name": "Hammed Small", "goals": 1, "assists": 0 },
+      { "name": "Blinks", "goals": 0, "assists": 1 },
+      { "name": "Niran", "goals": 4, "assists": 0 },
+      { "name": "Seunpresido", "goals": 1, "assists": 2 }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": ""
+
+  },
+
+  "WEEK30": {
+    "date": "2026-08-13",
+    "players": [
+      { "name": "Tolu", "goals": 1, "assists": 1 },
+      { "name": "Blinks", "goals": 1, "assists": 0 },
+      { "name": "Damola", "goals": 1, "assists": 1 },
+      { "name": "Hebro", "goals": 2, "assists": 1 },
+      { "name": "Olawale", "goals": 1, "assists": 0 },
+      { "name": "Muyi", "goals": 0, "assists": 1 },
+      { "name": "Gbemmy", "goals": 0, "assists": 1 },
+      { "name": "Olayinka", "goals": 0, "assists": 1 },
+      { "name": "Hassan", "goals": 0, "assists": 2 },
+      { "name": "Tofunmi", "goals": 2, "assists": 0 },
+      { "name": "Niran", "goals": 2, "assists": 0 },
+      { "name": "Cerute", "goals": 0, "assists": 1 },
+      { "name": "MD", "goals": 1, "assists": 0  }
     ],
     "videoUrl": "",
     "fullVideoUrl": ""
