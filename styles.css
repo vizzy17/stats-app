@@ -1,0 +1,196 @@
+/* ===========================
+   GLOBAL
+=========================== */
+
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+h2, h3, h4 {
+  margin-top: 20px;
+  color: #333;
+}
+
+input, select {
+  padding: 8px;
+  margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.adminBtn,
+.reportBtn,
+.submitBtn,
+.closeBtn,
+.confirmBtn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.adminBtn {
+  background: #007bff;
+  color: #fff;
+}
+
+.dangerBtn {
+  background: #dc3545 !important;
+  color: #fff;
+}
+
+.reportBtn {
+  background: #007bff;
+  color: #fff;
+}
+
+.submitBtn {
+  background: #28a745;
+  color: #fff;
+}
+
+.closeBtn {
+  background: #dc3545;
+  color: #fff;
+}
+
+.confirmBtn {
+  background: #ffc107;
+  color: #000;
+  font-weight: bold;
+}
+
+/* ===========================
+   MODALS
+=========================== */
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 20px;
+  width: 320px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #0003;
+}
+
+/* ===========================
+   CONFIRMATION LIST
+=========================== */
+
+#confirmList div {
+  padding: 8px;
+  background: #f1f1f1;
+  margin-bottom: 6px;
+  border-radius: 6px;
+}
+
+.confirmActionBtn {
+  padding: 6px 10px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirmYes {
+  background: #28a745;
+  color: #fff;
+}
+
+.confirmNo {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* ===========================
+   ADMIN REPORTS
+=========================== */
+
+.adminReportsBox div {
+  padding: 10px;
+  background: #f8f9fa;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.adminReportsBox input[type="radio"] {
+  margin-right: 8px;
+}
+
+/* ===========================
+   WEEKLY REPORT
+=========================== */
+
+.reportBox {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-top: 20px;
+}
+
+.reportBox h4 {
+  margin-top: 20px;
+  color: #007bff;
+}
+
+.reportBox ul {
+  padding-left: 20px;
+}
+
+/* ===========================
+   REPORT HISTORY
+=========================== */
+
+.historyBox {
+  margin-bottom: 20px;
+}
+
+.historyBox div {
+  padding: 10px;
+  background: #f8f9fa;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.historyBox strong {
+  color: #007bff;
+}
+
+/* ===========================
+   ADMIN LOGIN SCREEN
+=========================== */
+
+#adminLoginScreen {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  max-width: 300px;
+  margin: 40px auto;
+}
+
+#adminLoginStatus {
+  margin-top: 10px;
+  color: red;
+}
