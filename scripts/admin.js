@@ -227,6 +227,55 @@
     });
   }
 
+   //////////////////////////////
+// Automatic PIN Generation
+//////////////////////////////
+
+// Generate a random 4-digit PIN
+function generatePIN() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+// Assign PINs to all players who don't have one
+function assignPinsToPlayers() {
+  if (!players || !players.length) {
+    alert("Players not loaded yet.");
+    return;
+  }
+
+  players.forEach(p => {
+    if (!p.pin) {
+      p.pin = generatePIN();
+    }
+  });
+
+  // Download updated players.json
+  const blob = new Blob([JSON.stringify(players, null, 2)], {
+    type: "application/json"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "players.json";
+  a.click();
+  URL.revokeObjectURL(url);
+
+  alert("PINs generated and players.json downloaded. Upload it back via Admin.");
+}
+
+//////////////////////////////
+// Generate PINs Button Listener
+//////////////////////////////
+
+const generatePinsBtn = document.querySelector("#generatePinsBtn");
+
+if (generatePinsBtn) {
+  generatePinsBtn.addEventListener("click", () => {
+    assignPinsToPlayers();
+  });
+}
+
   //////////////////////////////
   // Boot
   //////////////////////////////
