@@ -1,4 +1,5 @@
 /* common.js — Auto‑path‑detecting version */
+
 //////////////////////////////
 // Utility Helpers
 //////////////////////////////
@@ -175,6 +176,32 @@ async function loadData() {
 }
 
 //////////////////////////////
+// Load Reports.json
+//////////////////////////////
+
+async function loadReports() {
+  const base = detectBasePath();
+  const version = Date.now(); // cache-buster
+  return await safeLoadJSON(`${base}/data/reports.json?v=${version}`);
+}
+
+//////////////////////////////
+// Download JSON Helper
+//////////////////////////////
+
+function downloadJSON(obj, filename) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {
+    type: "application/json"
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+//////////////////////////////
 // Export
 //////////////////////////////
 
@@ -182,3 +209,5 @@ window.normalizeName = normalizeName;
 window.keyName = keyName;
 window.safeLoadJSON = safeLoadJSON;
 window.loadData = loadData;
+window.loadReports = loadReports;
+window.downloadJSON = downloadJSON;
