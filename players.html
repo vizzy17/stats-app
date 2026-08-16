@@ -1,95 +1,55 @@
-
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TNF League – Players</title>
-
-  <!-- Inline CSS preserved exactly as in index.html -->
-  <style>
-    :root{
-      --bg1:#37003C; --bg2:#0A1A2F; --muted:#A0A0A0; --card-bg:rgba(255,255,255,0.04);
-      --accent:#FF2882; --green:#00FF85; --neon:#00E6FF;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;}
-    body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#F2F2F2}
-    .wrap{max-width:1100px;margin:20px auto;padding:18px}
-    .card{background:var(--card-bg);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 8px 30px rgba(0,0,0,0.45)}
-    .muted{color:var(--muted)}
-    .flex{display:flex;align-items:center}
-    .small-photo{width:48px;height:48px;border-radius:8px;object-fit:cover;border:2px solid rgba(255,255,255,0.03)}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:999}
-    .modal .box{background:#071226;padding:16px;border-radius:10px;width:100%;max-width:520px}
-  </style>
+  <meta charset="UTF-8">
+  <title>TNF Players</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-  <!-- Top Navigation -->
-  <nav style="display:flex;gap:20px;padding:12px 18px;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);position:sticky;top:0;z-index:50">
-    <a href="dashboard.html" style="color:#fff">Dashboard</a>
-    <a href="highlights.html" style="color:#fff">Highlights</a>
-    <a href="players.html" style="color:#fff;font-weight:700">Players</a>
-    <a href="admin.html" style="color:#fff">Admin</a>
-  </nav>
+  <h2>Players</h2>
 
-  <div class="wrap">
+  <!-- Example: player selection stored in sessionStorage elsewhere -->
+  <button id="openReportModal" class="reportBtn">Report Goals / Assists</button>
+  <button id="openConfirmModal" class="confirmBtn">Confirm Reports</button>
 
-    <!-- Page Header -->
-    <header style="margin-bottom:12px">
-      <div style="font-weight:700;font-size:20px">Players</div>
-      <div class="muted" style="font-size:13px">Full roster with goals & assists</div>
-    </header>
+  <!-- REPORT MODAL -->
+  <div id="reportModal" class="modal">
+    <div class="modalContent">
+      <h3>Report Your Goals / Assists</h3>
 
-    <!-- Players Grid -->
-    <section class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-weight:700">Players</div>
-        <div class="muted" style="font-size:13px">Total players: <span id="playersCount">0</span></div>
-      </div>
-      <div id="playersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
-    </section>
+      <label>Your Name</label>
+      <input type="text" id="reportPlayerName" readonly>
 
-    <!-- Player Modal -->
-    <div id="playerModal" class="modal" role="dialog" aria-hidden="true">
-      <div class="box">
-        <div style="display:flex;gap:12px">
-          <img id="modalPhoto" src="" alt="" style="width:72px;height:72px;border-radius:8px;object-fit:cover">
-          <div style="flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div id="modalName" style="font-weight:700"></div>
-                <div id="modalMeta" class="muted" style="font-size:13px"></div>
-              </div>
-              <button id="modalClose" class="btn">Close</button>
-            </div>
+      <label>Goals Scored</label>
+      <input type="number" id="reportGoals" min="0" value="0">
 
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center">
-              <div>
-                <div class="muted" style="font-size:12px">Goals</div>
-                <div id="modalGoals" style="font-weight:700;font-size:18px">0</div>
-              </div>
-              <div>
-                <div class="muted" style="font-size:12px">Assists</div>
-                <div id="modalAssists" style="font-weight:700;font-size:18px">0</div>
-              </div>
-              <div>
-                <div class="muted" style="font-size:12px">Total</div>
-                <div id="modalTotal" style="font-weight:700;font-size:18px">0</div>
-              </div>
-            </div>
+      <label>Assists Made</label>
+      <input type="number" id="reportAssists" min="0" value="0">
 
-            <div id="modalExtra" class="muted" style="margin-top:10px;font-size:13px"></div>
-          </div>
-        </div>
-      </div>
+      <label>Confirming Player</label>
+      <select id="reportConfirmBy"></select>
+
+      <label>Your PIN</label>
+      <input type="password" id="reportPIN" maxlength="4">
+
+      <button id="submitReportBtn" class="submitBtn">Submit Report</button>
+      <button id="closeReportModal" class="closeBtn">Cancel</button>
     </div>
-
   </div>
 
-  <!-- JS Modules -->
+  <!-- CONFIRMATION MODAL -->
+  <div id="confirmModal" class="modal">
+    <div class="modalContent">
+      <h3>Confirm Goal / Assist Reports</h3>
+
+      <div id="confirmList"></div>
+
+      <button id="closeConfirmModal" class="closeBtn">Close</button>
+    </div>
+  </div>
+
   <script src="scripts/common.js"></script>
   <script src="scripts/players.js"></script>
 
