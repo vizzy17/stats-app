@@ -1,40 +1,317 @@
 [
-  { "name": "Niran", "goals": 15, "assists": 6 },
-  { "name": "Oreke", "goals": 18, "assists": 1 },
-  { "name": "Hassan", "goals": 12, "assists": 1 },
-  { "name": "Olowo", "goals": 11, "assists": 2 },
-  { "name": "Hebro", "goals": 7, "assists": 6 },
-  { "name": "Gbemmy", "goals": 6, "assists": 10 },
-  { "name": "Olayinka", "goals": 9, "assists": 1 },
-  { "name": "Goke", "goals": 4, "assists": 3 },
-  { "name": "Tofunmi", "goals": 6, "assists": 1 },
-  { "name": "Cattano", "goals": 2, "assists": 5 },
-  { "name": "Madiba", "goals": 3, "assists": 1 },
-  { "name": "Ola", "goals": 1, "assists": 2 },
-  { "name": "Jide", "goals": 2, "assists": 2 },
-  { "name": "Gpay", "goals": 2, "assists": 0 },
-  { "name": "Abbey", "goals": 1, "assists": 0 },
-  { "name": "Body", "goals": 0, "assists": 2 },
-  { "name": "Lati", "goals": 0, "assists": 1 },
-  { "name": "Efizy", "goals": 0, "assists": 1 },
-  { "name": "Muyi", "goals": 1, "assists": 1 },
-  { "name": "Seun", "goals": 1, "assists": 2 },
-  { "name": "Seunpresido", "goals": 1, "assists": 3 },
-  { "name": "Kunle Engr", "goals": 1, "assists": 3 },
-  { "name": "Milli", "goals": 3, "assists": 1 },
-  { "name": "Blinks", "goals": 3, "assists": 1 },
-  { "name": "Tolu", "goals": 2, "assists": 1 },
-  { "name": "Hushbaba", "goals": 2, "assists": 1 },
-  { "name": "MD", "goals": 3, "assists": 2 },
-  { "name": "Jabar", "goals": 4, "assists": 0 },
-  { "name": "Akeem", "goals": 1, "assists": 1 },
-  { "name": "Zambad", "goals": 1, "assists": 1 },
-  { "name": "Olawale", "goals": 2, "assists": 0 },
-  { "name": "Cerute", "goals": 0, "assists": 1 },
-  { "name": "Teejay", "goals": 1, "assists": 1 },
-  { "name": "Tiloye", "goals": 1, "assists": 0 },
-  { "name": "Okky", "goals": 1, "assists": 3 },
-  { "name": "YT", "goals": 0, "assists": 0 },
-  { "name": "Balotelli", "goals": 0, "assists": 0 },
-  { "name": "Ralph", "goals": 0, "assists": 0 }
+  {
+    "name": "Niran",
+    "goals": 27,
+    "assists": 8,
+    "total": 35,
+    "pin": "8534"
+  },
+  {
+    "name": "Oreke",
+    "goals": 24,
+    "assists": 3,
+    "total": 27,
+    "pin": "8341"
+  },
+  {
+    "name": "Hassan",
+    "goals": 20,
+    "assists": 4,
+    "total": 24,
+    "pin": "5060"
+  },
+  {
+    "name": "Olowo",
+    "goals": 13,
+    "assists": 2,
+    "total": 15,
+    "pin": "9066"
+  },
+  {
+    "name": "Hebro",
+    "goals": 14,
+    "assists": 8,
+    "total": 22,
+    "pin": "7832"
+  },
+  {
+    "name": "Gbemmy",
+    "goals": 8,
+    "assists": 17,
+    "total": 25,
+    "pin": "6164"
+  },
+  {
+    "name": "Olayinka",
+    "goals": 11,
+    "assists": 3,
+    "total": 14,
+    "pin": "8937"
+  },
+  {
+    "name": "Goke",
+    "goals": 5,
+    "assists": 8,
+    "total": 13,
+    "pin": "7187"
+  },
+  {
+    "name": "Tofunmi",
+    "goals": 11,
+    "assists": 1,
+    "total": 12,
+    "pin": "5732"
+  },
+  {
+    "name": "Cattano",
+    "goals": 5,
+    "assists": 7,
+    "total": 12,
+    "pin": "7183"
+  },
+  {
+    "name": "Madiba",
+    "goals": 3,
+    "assists": 1,
+    "total": 4,
+    "pin": "6627"
+  },
+  {
+    "name": "Ola",
+    "goals": 1,
+    "assists": 1,
+    "total": 2,
+    "pin": "3464"
+  },
+  {
+    "name": "Jide",
+    "goals": 3,
+    "assists": 3,
+    "total": 6,
+    "pin": "4286"
+  },
+  {
+    "name": "Gpay",
+    "goals": 2,
+    "assists": 3,
+    "total": 5,
+    "pin": "4049"
+  },
+  {
+    "name": "Abbey",
+    "goals": 3,
+    "assists": 1,
+    "total": 4,
+    "pin": "3426"
+  },
+  {
+    "name": "Body",
+    "goals": 0,
+    "assists": 4,
+    "total": 4,
+    "pin": "7781"
+  },
+  {
+    "name": "Lati",
+    "goals": 2,
+    "assists": 1,
+    "total": 3,
+    "pin": "3199"
+  },
+  {
+    "name": "Efizy",
+    "goals": 0,
+    "assists": 1,
+    "total": 1,
+    "pin": "9864"
+  },
+  {
+    "name": "Muyi",
+    "goals": 2,
+    "assists": 2,
+    "total": 4,
+    "pin": "8798"
+  },
+  {
+    "name": "Seun",
+    "goals": 1,
+    "assists": 3,
+    "total": 4,
+    "pin": "4692"
+  },
+  {
+    "name": "Seunpresido",
+    "goals": 3,
+    "assists": 5,
+    "total": 8,
+    "pin": "6169"
+  },
+  {
+    "name": "Kunle Engr",
+    "goals": 1,
+    "assists": 3,
+    "total": 4,
+    "pin": "5775"
+  },
+  {
+    "name": "Milli",
+    "goals": 3,
+    "assists": 1,
+    "total": 4,
+    "pin": "8415"
+  },
+  {
+    "name": "Blinks",
+    "goals": 5,
+    "assists": 2,
+    "total": 7,
+    "pin": "4097"
+  },
+  {
+    "name": "Tolu",
+    "goals": 4,
+    "assists": 2,
+    "total": 6,
+    "pin": "5747"
+  },
+  {
+    "name": "Hushbaba",
+    "goals": 3,
+    "assists": 1,
+    "total": 4,
+    "pin": "9937"
+  },
+  {
+    "name": "Md",
+    "goals": 5,
+    "assists": 5,
+    "total": 10,
+    "pin": "5400"
+  },
+  {
+    "name": "Jabar",
+    "goals": 8,
+    "assists": 1,
+    "total": 9,
+    "pin": "8618"
+  },
+  {
+    "name": "Akeem",
+    "goals": 1,
+    "assists": 1,
+    "total": 2,
+    "pin": "6348"
+  },
+  {
+    "name": "Zambad",
+    "goals": 1,
+    "assists": 1,
+    "total": 2,
+    "pin": "8054"
+  },
+  {
+    "name": "Olawale",
+    "goals": 9,
+    "assists": 0,
+    "total": 9,
+    "pin": "1787"
+  },
+  {
+    "name": "Cerute",
+    "goals": 0,
+    "assists": 2,
+    "total": 2,
+    "pin": "3097"
+  },
+  {
+    "name": "Teejay",
+    "goals": 1,
+    "assists": 6,
+    "total": 7,
+    "pin": "6604"
+  },
+  {
+    "name": "Tiloye",
+    "goals": 1,
+    "assists": 0,
+    "total": 1,
+    "pin": "9158"
+  },
+  {
+    "name": "Okky",
+    "goals": 4,
+    "assists": 3,
+    "total": 7,
+    "pin": "5176"
+  },
+  {
+    "name": "Yt",
+    "goals": 1,
+    "assists": 0,
+    "total": 1,
+    "pin": "3325"
+  },
+  {
+    "name": "Balotelli",
+    "goals": 0,
+    "assists": 2,
+    "total": 2,
+    "pin": "9945"
+  },
+  {
+    "name": "Ralph",
+    "goals": 1,
+    "assists": 0,
+    "total": 1,
+    "pin": "3693"
+  },
+  {
+    "name": "Sly",
+    "goals": 6,
+    "assists": 1,
+    "total": 7,
+    "pin": "8285"
+  },
+  {
+    "name": "Pappy",
+    "goals": 0,
+    "assists": 1,
+    "total": 1,
+    "pin": "6005"
+  },
+  {
+    "name": "Hammed Small",
+    "goals": 5,
+    "assists": 0,
+    "total": 5,
+    "pin": "5925"
+  },
+  {
+    "name": "John",
+    "goals": 1,
+    "assists": 0,
+    "total": 1,
+    "pin": "6947"
+  },
+  {
+    "name": "Shola",
+    "goals": 4,
+    "assists": 0,
+    "total": 4,
+    "pin": "3060"
+  },
+  {
+    "name": "Ahmed",
+    "goals": 0,
+    "assists": 1,
+    "total": 1,
+    "pin": "5741"
+  },
+  {
+    "name": "Damola",
+    "goals": 1,
+    "assists": 1,
+    "total": 2,
+    "pin": "6077"
+  }
 ]
