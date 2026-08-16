@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TNF Reporting History</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <h2>Reporting History</h2>
+
+  <div>
+    <label>Select Player:</label>
+    <select id="historyPlayerSelect"></select>
+  </div>
+
+  <h3>Pending Reports</h3>
+  <div id="historyPending" class="historyBox"></div>
+
+  <h3>Confirmed Reports</h3>
+  <div id="historyConfirmed" class="historyBox"></div>
+
+  <h3>Approved Reports</h3>
+  <div id="historyApproved" class="historyBox"></div>
+
+  <h3>Rejected Reports</h3>
+  <div id="historyRejected" class="historyBox"></div>
+
+  <script src="scripts/common.js"></script>
+  <script src="scripts/report-history.js"></script>
+
+</body>
+</html>
