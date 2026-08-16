@@ -83,10 +83,15 @@ const fallbackWeeks = {
 //////////////////////////////
 
 async function loadData() {
+
+  // IMPORTANT: Force GitHub Pages to load correct files
+  const playersURL = '/stats-app/data/players.json?v=1';
+  const weeksURL   = '/stats-app/data/weeks.json?v=1';
+
   // Load JSON files
   const [p, w] = await Promise.all([
-    safeLoadJSON('data/players.json'),
-    safeLoadJSON('data/weeks.json')
+    safeLoadJSON(playersURL),
+    safeLoadJSON(weeksURL)
   ]);
 
   const playersSource = Array.isArray(p) ? p : fallbackPlayers;
