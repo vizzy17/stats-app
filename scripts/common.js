@@ -1,16 +1,12 @@
-/* common.js — Shared TNF Utilities & Data Loader
-   Used by: dashboard.js, highlights.js, players.js, admin.js
-*/
+/* common.js — Auto‑path‑detecting version */
 
 //////////////////////////////
 // Utility Helpers
 //////////////////////////////
 
-// Query helpers
 const $ = sel => document.querySelector(sel);
 const $all = sel => Array.from(document.querySelectorAll(sel));
 
-// Normalise display name (capitalisation, spacing)
 function normalizeName(raw) {
   if (!raw && raw !== '') return '';
   return String(raw)
@@ -21,7 +17,6 @@ function normalizeName(raw) {
     .join(' ');
 }
 
-// Normalised key for lookup (lowercase, trimmed)
 function keyName(raw) {
   return String(raw || '').trim().toLowerCase();
 }
@@ -63,32 +58,43 @@ const fallbackWeeks = {
       { name: "Pappy", goals:0, assists:1 },
       { name: "Cattano", goals:1, assists:0 },
       { name: "Goke", goals:1, assists:0 }
-    ],
-    videoUrl: "",
-    fullVideoUrl: ""
+    ]
   },
   "WEEK-PRIOR": {
     date: "2026-05-01",
     players: [
       { name:"Hassan", goals:2, assists:1 },
       { name:"Goke", goals:1, assists:0 }
-    ],
-    videoUrl: "",
-    fullVideoUrl: ""
+    ]
   }
 };
 
 //////////////////////////////
-// Data Loader (Core Engine)
+// Auto‑detect correct base path
+//////////////////////////////
+
+function detectBasePath() {
+  const path = window.location.pathname;
+
+  // If your site is served from /stats-app/
+  if (path.includes('/stats-app/')) return '/stats-app';
+
+  // If your site is served from root /
+  return '';
+}
+
+//////////////////////////////
+// Data Loader
 //////////////////////////////
 
 async function loadData() {
 
-  // IMPORTANT: Force GitHub Pages to load correct files
-  const playersURL = '/stats-app/data/players.json?v=1';
-  const weeksURL   = '/stats-app/data/weeks.json?v=1';
+  const base = detectBasePath();
+  const version = Date.now(); // cache‑buster
 
-  // Load JSON files
+  const playersURL = `${base}/data/players.json?v=${version}`;
+  const weeksURL   = `${base}/data/weeks.json?v=${version}`;
+
   const [p, w] = await Promise.all([
     safeLoadJSON(playersURL),
     safeLoadJSON(weeksURL)
@@ -99,9 +105,7 @@ async function loadData() {
 
   let weeks = {};
 
-  //////////////////////////////
-  // Merge duplicates inside each week
-  //////////////////////////////
+  // Merge duplicates
   for (const [wk, obj] of Object.entries(weeksSource)) {
     const merged = {};
 
@@ -110,9 +114,7 @@ async function loadData() {
       if (!name) return;
 
       const k = keyName(name);
-      if (!merged[k]) {
-        merged[k] = { name, goals: 0, assists: 0 };
-      }
+      if (!merged[k]) merged[k] = { name, goals: 0, assists: 0 };
 
       merged[k].goals += Number(r.goals || 0);
       merged[k].assists += Number(r.assists || 0);
@@ -121,9 +123,7 @@ async function loadData() {
     weeks[wk] = { ...obj, players: Object.values(merged) };
   }
 
-  //////////////////////////////
-  // Build roster (players.json + auto-add from weeks)
-  //////////////////////////////
+  // Build roster
   const roster = new Map();
 
   playersSource.forEach(p => {
@@ -144,9 +144,7 @@ async function loadData() {
     });
   });
 
-  //////////////////////////////
-  // Compute authoritative totals
-  //////////////////////////////
+  // Compute totals
   const totals = {};
 
   Object.values(weeks).forEach(wk => {
@@ -155,18 +153,13 @@ async function loadData() {
       if (!n) return;
 
       const k = keyName(n);
-      if (!totals[k]) {
-        totals[k] = { name: n, goals: 0, assists: 0 };
-      }
+      if (!totals[k]) totals[k] = { name: n, goals: 0, assists: 0 };
 
       totals[k].goals += Number(p.goals || 0);
       totals[k].assists += Number(p.assists || 0);
     });
   });
 
-  //////////////////////////////
-  // Apply totals to roster
-  //////////////////////////////
   const players = Array.from(roster.values()).map(rec => {
     const k = keyName(rec.name);
     const t = totals[k] || { goals: 0, assists: 0 };
@@ -179,17 +172,11 @@ async function loadData() {
     };
   });
 
-  //////////////////////////////
-  // Return shared state
-  //////////////////////////////
-  return {
-    players,
-    weeks
-  };
+  return { players, weeks };
 }
 
 //////////////////////////////
-// Export to global scope
+// Export
 //////////////////////////////
 
 window.normalizeName = normalizeName;
