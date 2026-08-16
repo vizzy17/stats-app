@@ -10,9 +10,17 @@
 
   <h2>Players</h2>
 
-  <!-- Example: player selection stored in sessionStorage elsewhere -->
-  <button id="openReportModal" class="reportBtn">Report Goals / Assists</button>
-  <button id="openConfirmModal" class="confirmBtn">Confirm Reports</button>
+  <!-- PLAYER PICTURE GRID -->
+  <div id="playerGrid" class="playerGrid"></div>
+
+  <!-- ACTION BUTTONS (HIDDEN UNTIL PLAYER IS SELECTED) -->
+  <button id="openReportModal" class="reportBtn" style="display:none;">
+    Report Goals / Assists
+  </button>
+
+  <button id="openConfirmModal" class="confirmBtn" style="display:none;">
+    Confirm Reports
+  </button>
 
   <!-- REPORT MODAL -->
   <div id="reportModal" class="modal">
