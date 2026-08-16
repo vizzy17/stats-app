@@ -1,6 +1,4 @@
-/* admin.js — TNF Admin Page Logic
-   Requires: common.js (loadData, normalizeName, keyName, etc.)
-*/
+/* admin.js — TNF Admin Page Logic */
 
 (async function(){
 
@@ -9,6 +7,23 @@
   let weeks = [];
   let payments = [];
   let selectedTeamsPublished = false;
+
+  //////////////////////////////
+  // Admin Authentication
+  //////////////////////////////
+  const ADMIN_PASSWORD = "TNF2026ADMIN"; // change this to your secret
+
+  document.querySelector("#adminLoginBtn").addEventListener("click", () => {
+    const input = document.querySelector("#adminPasscode").value.trim();
+    const status = document.querySelector("#adminLoginStatus");
+
+    if (input === ADMIN_PASSWORD) {
+      document.querySelector("#adminLoginScreen").style.display = "none";
+      document.querySelector("#adminContent").style.display = "block";
+    } else {
+      status.textContent = "Incorrect passcode.";
+    }
+  });
 
   //////////////////////////////
   // Render Payments Log
@@ -231,12 +246,10 @@
   // Automatic PIN Generation
   //////////////////////////////
 
-  // Generate a random 4-digit PIN
   function generatePIN() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   }
 
-  // Assign PINs to all players who don't have one
   function assignPinsToPlayers() {
     if (!players || !players.length) {
       alert("Players not loaded yet.");
@@ -249,24 +262,9 @@
       }
     });
 
-    // Download updated players.json
-    const blob = new Blob([JSON.stringify(players, null, 2)], {
-      type: "application/json"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "players.json";
-    a.click();
-    URL.revokeObjectURL(url);
-
+    downloadJSON(players, "players.json");
     alert("PINs generated and players.json downloaded. Upload it back via Admin.");
   }
-
-  //////////////////////////////
-  // Generate PINs Button Listener
-  //////////////////////////////
 
   const generatePinsBtn = document.querySelector("#generatePinsBtn");
 
@@ -277,16 +275,109 @@
   }
 
   //////////////////////////////
+  // Admin: Render Pending Reports
+  //////////////////////////////
+
+  async function renderAdminReports() {
+    const reports = await loadReports();
+    const area = document.querySelector("#adminReportsArea");
+
+    if (!area) return;
+
+    if (!reports.confirmed.length) {
+      area.innerHTML = "<div>No confirmed reports awaiting approval.</div>";
+      return;
+    }
+
+    area.innerHTML = reports.confirmed
+      .map((r, i) => `
+        <div>
+          <input type="radio" name="adminReportSelect" value="${i}">
+          <strong>${r.player}</strong> — Goals: ${r.goals}, Assists: ${r.assists}
+          <br>Confirmed by: ${r.confirmedBy}
+          <br><small>${r.timestamp.split("T")[0]}</small>
+        </div>
+      `)
+      .join("");
+  }
+
+  //////////////////////////////
+  // Admin: Approve Report
+  //////////////////////////////
+
+  document.querySelector("#approveReportBtn")?.addEventListener("click", async () => {
+    const reports = await loadReports();
+    const index = Number(document.querySelector("input[name='adminReportSelect']:checked")?.value);
+
+    if (isNaN(index)) {
+      alert("Select a report first");
+      return;
+    }
+
+    const report = reports.confirmed[index];
+
+    weeks[report.week].players.push({
+      name: report.player,
+      team: report.team || "A",
+      goals: report.goals,
+      assists: report.assists
+    });
+
+    const p = players.find(x => x.name === report.player);
+    if (p) {
+      p.goals += report.goals;
+      p.assists += report.assists;
+    }
+
+    report.status = "approved";
+    reports.approved.push(report);
+    reports.confirmed.splice(index, 1);
+
+    downloadJSON(weeks, "weeks.json");
+    downloadJSON(players, "players.json");
+    downloadJSON(reports, "reports.json");
+
+    alert("Report approved. Upload updated files.");
+    renderAdminReports();
+  });
+
+  //////////////////////////////
+  // Admin: Reject Report
+  //////////////////////////////
+
+  document.querySelector("#rejectReportBtn")?.addEventListener("click", async () => {
+    const reports = await loadReports();
+    const index = Number(document.querySelector("input[name='adminReportSelect']:checked")?.value);
+
+    if (isNaN(index)) {
+      alert("Select a report first");
+      return;
+    }
+
+    const report = reports.confirmed[index];
+
+    report.status = "rejected";
+    reports.rejected.push(report);
+    reports.confirmed.splice(index, 1);
+
+    downloadJSON(reports, "reports.json");
+
+    alert("Report rejected.");
+    renderAdminReports();
+  });
+
+  //////////////////////////////
   // Boot
   //////////////////////////////
   try {
-    const data = await loadData(); // from common.js
+    const data = await loadData();
     players = data.players;
     weeks = data.weeks;
 
     computeTotals();
     renderPaymentsLog();
     renderSelectedTeamsPreview();
+    renderAdminReports();
 
     console.info('Admin page loaded.');
   } catch (err) {
