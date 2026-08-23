@@ -308,6 +308,24 @@
     ],
     "videoUrl": "",
     "fullVideoUrl": ""
+  },
+    "WEEK31": {
+    "date": "2026-08-20",
+    "players": [
+      { "name": "Rasak", "goals": 1, "assists": 0 },
+      { "name": "gbemmy", "goals": 0, "assists": 2 },
+      { "name": "Oreke", "goals": 1, "assists": 0 },
+      { "name": "Hebro", "goals": 0, "assists": 1 },
+      { "name": "Ola", "goals": 1, "assists": 0 },
+      { "name": "Tofunmi", "goals": 2, "assists": 0 },
+      { "name": "Cattano", "goals": 0, "assists": 1 },
+      { "name": "Jabar", "goals": 1, "assists": 1 },
+      { "name": "Lati", "goals": 1, "assists": 0 },
+      { "name": "Tofunmi", "goals": 2, "assists": 0 },
+      { "name": "Hammed Small", "goals": 2, "assists": 1 }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": ""
   }
   }
   
