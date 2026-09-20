@@ -356,6 +356,39 @@
     ],
     "videoUrl": "",
     "fullVideoUrl": ""
+    },
+    "WEEK34": {
+    "date": "2026-09-10",
+    "players": [
+      { "name": "Jide", "goals": 1, "assists": 0 },
+      { "name": "Pappy", "goals": 0, "assists": 1 },
+      { "name": "Shola", "goals": 2, "assists": 0 },
+      { "name": "Jabar", "goals": 1, "assists": 0 },
+      { "name": "Tolu", "goals": 0, "assists": 1 },
+      { "name": "Goke", "goals": 1, "assists": 0 },
+      { "name": "Stateman", "goals": 0, "assists": 1 },
+      { "name": "Okky", "goals": 1, "assists": 0 },
+      { "name": "Sly", "goals": 0, "assists": 1 },
+      { "name": "John", "goals": 1, "assists": 1 },
+      { "name": "Oreke", "goals": 1, "assists": 0 }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": "https://youtu.be/hY7sG3hGVHY"
+  },
+    "WEEK35": {
+    "date": "2026-09-17",
+    "players": [
+      { "name": "Lati", "goals": 1, "assists": 0 },
+      { "name": "Hushbaba", "goals": 0, "assists": 1 },
+      { "name": "GPay", "goals": 1, "assists": 0 },
+      { "name": "Jabar", "goals": 0, "assists": 1 },
+      { "name": "Hassan", "goals": 1, "assists": 0 },
+      { "name": "Tolu", "goals": 1, "assists": 0 },
+      { "name": "Niran", "goals": 3, "assists": 0 },
+      { "name": "Razak", "goals": 1, "assists": 2 }
+    ],
+    "videoUrl": "",
+    "fullVideoUrl": "https://youtu.be/wqdY71pussE"
   }
   }
   
